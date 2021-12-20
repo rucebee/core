@@ -1,0 +1,21 @@
+{
+  "name": "@rucebee/core",
+  "version": "1.0.2",
+  "description": "Core utils and components",
+  "scripts": {
+    "build": "rm -f *.js && babel src -d .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rucebee",
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "uuid": "^8.3.2"
+  },
+  "peerDependencies": {
+    "vue": "^2",
+    "vuex": "^3",
+    "bootstrap": "^5"
+  }
+}
