@@ -6,7 +6,7 @@
 import loadJs from '../utils/loadJs'
 
 export default {
-  props: ['center', 'zoom', 'options', 'gkey', 'icon', 'styles'],
+  props: ['center', 'zoom', 'options', 'gkey'],
 
   mounted () {
     loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' + this.gkey).then(() => {
@@ -16,9 +16,9 @@ export default {
 
       const map = new Map(this.$el, Object.assign({
         center: this.center,
-        zoom: this.zoom,
-        // scrollwheel: false,
-        // disableDefaultUI: true,
+        zoom: this.zoom || 17,
+        scrollwheel: false,
+        disableDefaultUI: true,
       }, this.options))
 
       // const styles = [{
@@ -30,9 +30,7 @@ export default {
       //   elementType: 'all',
       //   stylers: [{ color: '#e6e6e6' }],
       // }]
-
-      if (this.styles)
-        map.set('styles', this.styles)
+      // map.set('styles', this.styles)
 
       // const icon = {
       //   url: require('~/assets/images/img-marker.png'),
@@ -43,10 +41,7 @@ export default {
       //   // The anchor for this image is the base of the flagpole at (0, 32).
       //   anchor: new Point(25, 62)
       // }
-
-      if (this.icon)
-        // eslint-disable-next-line no-new
-        new Marker({ position: this.position, map, icon: this.icon })
+      // new Marker({ position: this.position, map, icon: this.icon })
 
       this.map = map
       addEventListener('resize', this.onResize)

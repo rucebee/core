@@ -13,7 +13,7 @@ function outerHandler (ev) {
         p = p.parentElement
       }
 
-      if (binding.value) binding.value()
+      if (binding.value) binding.value(ev)
     }
 }
 
