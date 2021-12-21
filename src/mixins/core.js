@@ -1,7 +1,7 @@
 import noop from 'lodash/noop'
 import isString from 'lodash/isString'
 
-const historyLength = history.length
+const historyLength = process.client ? history.length : 0
 
 export default {
   data () {
