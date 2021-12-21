@@ -1,6 +1,6 @@
 {
   "name": "@rucebee/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Core utils and components",
   "scripts": {
     "build": "rm -f *.js && babel src -d .",
