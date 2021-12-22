@@ -291,14 +291,18 @@ export class DataSource {
     let i = 0
 
     const position = typeof args[0] === 'number' ? args[i++] : this.list.indexOf(args[i])
-    if (position > -1) {
-      const _item = args[i] === this.list[position] ? Object.assign({}, args[i]) : args[i]
-
-      this.vm.$set(this.list, position, _item)
-      return _item
+    const _item = args[i]
+    if (position > -1 && _item !== this.list[position]) {
+      Vue.set(this.list, position, _item)
     }
 
-    return args[i]
+    for (const key in _item) {
+      const val = _item[key]
+      delete _item[key]
+      Vue.set(_item, key, val)
+    }
+
+    return _item
   }
 }
 
@@ -558,8 +562,8 @@ export const ProtoView = {
 
     hasPromise (name) {
       return !!(name
-          ? this.item.promise?.[name]
-          : this.item.promise && Object.keys(this.item.promise).length
+              ? this.item.promise?.[name]
+              : this.item.promise && Object.keys(this.item.promise).length
       )
     },
   },
