@@ -1,12 +1,12 @@
 <template>
   <div v-layout="['resize scroll wheel mouseup touchend touchcancel', onLayout]" class="component-list">
     <component
-      :is="itemRenderer(item)"
-      v-for="(item, index) in listData"
-      :key="item.id"
-      :item="item"
-      :position="index"
-      :source="source"
+        :is="itemRenderer(item)"
+        v-for="(item, index) in listData"
+        :key="item.id"
+        :item="item"
+        :position="index"
+        :source="source"
     />
   </div>
 </template>
@@ -137,7 +137,7 @@ export default {
       }
 
       if (this.$slots[type][0].componentOptions)
-        // console.log(item, this.$slots[item.type][0].componentOptions.Ctor.options)
+          // console.log(item, this.$slots[item.type][0].componentOptions.Ctor.options)
       {
         return this.$slots[type][0].componentOptions.Ctor.options
       }
@@ -311,9 +311,9 @@ export class ListSource extends DataSource {
     const list = this.list
 
     this.refresh = new PeriodicRefresh(() =>
-      query.call(this).then((_list) => {
-        list.splice(0, list.length, ..._list)
-      }), period)
+        query.call(this).then((_list) => {
+          list.splice(0, list.length, ..._list)
+        }), period)
   }
 }
 
@@ -469,10 +469,10 @@ export class HistorySource extends DataSource {
 
       return queryHistory.call(this, list[this.firstIndex], limit).then((_list) => {
         if (!_list ||
-          !this.firstIndex ||
-          list.length <= this.firstIndex ||
-          item.id !== list[this.firstIndex].id ||
-          this.cutHistory()) {
+            !this.firstIndex ||
+            list.length <= this.firstIndex ||
+            item.id !== list[this.firstIndex].id ||
+            this.cutHistory()) {
           return
         }
 
@@ -557,7 +557,10 @@ export const ProtoView = {
     },
 
     hasPromise (name) {
-      return !!this.item.promise?.[name]
+      return !!(name
+          ? this.item.promise?.[name]
+          : this.item.promise && Object.keys(this.item.promise).length
+      )
     },
   },
 }
