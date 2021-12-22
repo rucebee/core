@@ -287,6 +287,14 @@ export class DataSource {
     }
   }
 
+  updateAll () {
+    for( const item of this.list) {
+      const id = item.id
+      Vue.set(item, 'id', '')
+      Vue.set(item, 'id', id)
+    }
+  }
+
   update (...args) {
     let i = 0
 
