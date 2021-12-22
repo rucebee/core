@@ -292,9 +292,8 @@ export class DataSource {
 
     const position = typeof args[0] === 'number' ? args[i++] : this.list.indexOf(args[i])
     const _item = args[i]
-    if (position > -1 && _item !== this.list[position]) {
+    if (position > -1 && _item !== this.list[position])
       Vue.set(this.list, position, _item)
-    }
 
     for (const key in _item) {
       const val = _item[key]
