@@ -17,7 +17,7 @@ export default {
       const map = new Map(this.$el, Object.assign({
         center: this.center,
         zoom: this.zoom || 17,
-        scrollwheel: false,
+        scrollwheel: true,
         disableDefaultUI: true,
       }, this.options))
 
