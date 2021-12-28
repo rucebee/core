@@ -311,6 +311,11 @@ export class DataSource {
 
     return _item
   }
+
+  findLast(fn) {
+    for(let i = this.list.length - 1; i >= 0; i--)
+      if(fn(this.list[i])) return this.list[i]
+  }
 }
 
 export const LOADING_ITEM = { type: 'loading' }
@@ -350,12 +355,11 @@ export class WaterfallSource extends DataSource {
     list.push(loadingItem)
 
     this.refresh = new PeriodicRefresh(() => {
-      const item = findLast(list, 'id', list.length - 2)
+      const item = list.length > 1 ? list[list.length - 2] : undefined
 
       return query.call(this, item, limit).then((_list) => {
-        if (item?.id !== findLast(list, 'id', list.length - 2)?.id) {
+        if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined))
           return
-        }
 
         if (_list?.length) {
           list.splice(list.length - 1, 0, ..._list)
