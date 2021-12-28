@@ -1,8 +1,6 @@
 import noop from 'lodash/noop'
 import isString from 'lodash/isString'
 
-const historyLength = process.client ? history.length : 0
-
 export default {
   data () {
     return {
@@ -65,7 +63,7 @@ export default {
     },
 
     back (home) {
-      if (history.length > historyLength)
+      if (this.$nuxt.context.from.name !== this.$route.name)
         this.$router.back()
       else
         this.$router.replace(home || '/').catch(noop)
