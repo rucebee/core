@@ -68,5 +68,11 @@ export default {
       else
         this.$router.replace(home || '/').catch(noop)
     },
+
+
+
+    up () {
+      scroll({top: 0})
+    },
   },
 }

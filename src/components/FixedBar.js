@@ -5,9 +5,7 @@ import range from '../utils/range'
 import timeout from '../utils/timeout'
 
 function beforeCreate () {
-  let
-    placeholder
-  let dock
+  let placeholder, dock
 
   let el; let elStyle; let elHeight; let minHeight; let exHeight
   let shown; let shownStyle; let shownInnerStyle; let shownHeight = 0
