@@ -288,9 +288,9 @@ export class DataSource {
   }
 
   updateAll () {
-    for( const item of this.list) {
+    for(const item of this.list) {
       const id = item.id
-      Vue.set(item, 'id', '')
+      delete item.id
       Vue.set(item, 'id', id)
     }
   }
