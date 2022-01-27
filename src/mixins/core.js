@@ -63,13 +63,11 @@ export default {
     },
 
     back (home) {
-      if (this.$nuxt.context.from.name !== this.$route.name)
+      if (this.$nuxt.context.from.fullPath !== this.$route.fullPath)
         this.$router.back()
       else
         this.$router.replace(home || '/').catch(noop)
     },
-
-
 
     up () {
       scroll({top: 0})
