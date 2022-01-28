@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid'
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
 
-function doLayout () {
+function doLayout (ev) {
   let position = 0
   let count = 0
   for (const el of this.$el.children) {
@@ -43,11 +43,38 @@ function doLayout () {
   if (!count) {
     position = 0
   }
-  this.start = position
+
+  this.position = position
   this.count = count
 
-  // console.log({ position, count })
+  console.log({
+    position,
+    count,
+    ev,
+    src: this.source,
+  })
+
   if (this.source) {
+    if (this.bottom) {
+      const doc = document.documentElement
+
+
+      // if (!ev) {
+      //   const index = this.source.findPosition(1393013)
+      //   if (index > -1) {
+      //     const el = this.$el.children[index]
+      //     console.log({
+      //       index,
+      //       el,
+      //       $el: this.$el,
+      //       d: doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight,
+      //     })
+      //
+      //     window.scroll(0, el.offsetTop + el.offsetHeight - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight) - .9)
+      //   }
+      // }
+    }
+
     this.source.layout(position, count)
   }
 }
@@ -59,6 +86,7 @@ export default {
   props: {
     list: Array,
     source: Object,
+    bottom: Boolean,
   },
 
   data () {
@@ -117,11 +145,11 @@ export default {
       }
 
       if (!ev || ['mouseup', 'touchend', 'touchcancel'].indexOf(ev.type) > -1) {
-        doLayout.apply(this)
+        doLayout.apply(this, [ev])
       } else {
         this.layoutTimer = setTimeout(() => {
           if (!this._isDestroyed) {
-            doLayout.apply(this)
+            doLayout.apply(this, [ev])
           }
         }, 1000)
       }
@@ -288,7 +316,7 @@ export class DataSource {
   }
 
   updateAll () {
-    for(const item of this.list) {
+    for (const item of this.list) {
       const id = item.id
       delete item.id
       Vue.set(item, 'id', id)
@@ -300,8 +328,9 @@ export class DataSource {
 
     const position = typeof args[0] === 'number' ? args[i++] : this.list.indexOf(args[i])
     const _item = args[i]
-    if (position > -1 && _item !== this.list[position])
+    if (position > -1 && _item !== this.list[position]) {
       Vue.set(this.list, position, _item)
+    }
 
     for (const key in _item) {
       const val = _item[key]
@@ -312,9 +341,12 @@ export class DataSource {
     return _item
   }
 
-  findLast(fn) {
-    for(let i = this.list.length - 1; i >= 0; i--)
-      if(fn(this.list[i])) return this.list[i]
+  findLast (fn) {
+    for (let i = this.list.length - 1; i >= 0; i--) {
+      if (fn(this.list[i])) {
+        return this.list[i]
+      }
+    }
   }
 }
 
@@ -358,8 +390,9 @@ export class WaterfallSource extends DataSource {
       const item = list.length > 1 ? list[list.length - 2] : undefined
 
       return query.call(this, item, limit).then((_list) => {
-        if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined))
+        if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined)) {
           return
+        }
 
         if (_list?.length) {
           list.splice(list.length - 1, 0, ..._list)

@@ -52,7 +52,10 @@
 <script>
 
 function checkDay () {
-  if (this.day !== null && this.day >= this.days.length + 1)
+  if (this.month !== null && this.month >= this.months.length) {
+    this.month = null
+    this.day = null
+  } else if (this.day !== null && this.day >= this.days.length + 1)
     this.day = null
 
   if (this.day === null)
@@ -103,13 +106,16 @@ export default {
 
     months () {
       const months = []
+      if(!this.year) return months
+
       for (let i = 0; i < 12; i++) {
-        const date = new Date(this.toDate?.getFullYear() ?? 0, i, 1)
+        const date = new Date(this.year, i, 1)
         if (!this.toDate || date <= this.toDate) months.push({
           text: date.toLocaleString(this.locale, { month: 'long' }),
           value: i,
         })
       }
+
       return months
     },
 

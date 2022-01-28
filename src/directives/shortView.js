@@ -8,7 +8,7 @@ export default {
     el.style.zIndex = '1029'
 
     vnode.context.window_scroll = () => {
-      el.style.top = -Math.max(0, el.previousElementSibling.getBoundingClientRect().bottom)+ 'px'
+      el.style.top = -Math.max(0, el.previousElementSibling.getBoundingClientRect().bottom - el.getBoundingClientRect().height)+ 'px'
     }
 
     addEventListener('scroll', vnode.context.window_scroll)
