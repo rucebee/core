@@ -47,32 +47,34 @@ function doLayout (ev) {
   this.position = position
   this.count = count
 
-  console.log({
-    position,
-    count,
-    ev,
-    src: this.source,
-  })
+  // console.log({
+  //   position,
+  //   count,
+  //   ev,
+  //   src: this.source,
+  // })
 
   if (this.source) {
     if (this.bottom) {
       const doc = document.documentElement
+      const el = this.$el.children[this.$el.children.length - 1]
 
+      // console.log({
+      //   ev, bottomOverflow: this.bottomOverflow,
+      // })
 
-      // if (!ev) {
-      //   const index = this.source.findPosition(1393013)
-      //   if (index > -1) {
-      //     const el = this.$el.children[index]
-      //     console.log({
-      //       index,
-      //       el,
-      //       $el: this.$el,
-      //       d: doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight,
-      //     })
-      //
-      //     window.scroll(0, el.offsetTop + el.offsetHeight - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight) - .9)
-      //   }
-      // }
+      if (!el) {
+        this.bottomOverflow = 0
+      } else if (!ev && this.bottomOverflow < 10) {
+        this.bottomOverflow = 0
+        window.scroll(0, el.offsetTop + el.offsetHeight - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight) - .9)
+      } else {
+        this.bottomOverflow = el.offsetTop + el.offsetHeight - window.scrollY - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight)
+
+        // console.log({
+        //   bottomOverflow: this.bottomOverflow,
+        // })
+      }
     }
 
     this.source.layout(position, count)
@@ -83,6 +85,7 @@ export default {
   directives: {
     layout: windowEventDirective,
   },
+
   props: {
     list: Array,
     source: Object,
@@ -93,6 +96,7 @@ export default {
     this.position = 0
     this.count = 0
     this.layoutTimer = 0
+    this.bottomOverflow = 0
 
     return {
       listData: this.list,
