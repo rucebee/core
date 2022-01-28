@@ -23,6 +23,9 @@ import { v4 as uuidv4 } from 'uuid'
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
 
+
+document.documentElement.style.scrollBehavior = 'auto'
+
 function doLayout (ev) {
   let position = 0
   let count = 0
