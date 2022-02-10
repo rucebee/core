@@ -63,7 +63,7 @@ export default {
     },
 
     back (home) {
-      if (this.$nuxt.context.from.fullPath !== this.$route.fullPath)
+      if (!this.$nuxt.context.from || this.$nuxt.context.from.fullPath !== this.$route.fullPath)
         this.$router.back()
       else
         this.$router.replace(home || '/').catch(noop)
