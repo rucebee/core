@@ -25,8 +25,7 @@ function beforeCreate () {
 
   let collapsed
 
-  const
-    doc = document.documentElement
+  let doc// = document.documentElement
   const _scrollTop = () => scrollY
   const _scrollTo = top => scrollTo(scrollX, top)
   const scrollStartAlways = !this.$slots.default && !this.$slots.hidden
@@ -210,6 +209,7 @@ function beforeCreate () {
 
   const mixin = {
     mounted () {
+      doc = document.documentElement
       placeholder = document.createElement('div')
 
       dock = document.createElement('div')
