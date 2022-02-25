@@ -5,7 +5,7 @@ export default {
     el.style.position =  'fixed'
     el.style.left = '0'
     el.style.right = '0'
-    el.style.zIndex = '1029'
+    el.style.zIndex = '1031'
 
     vnode.context.window_scroll = () => {
       el.style.top = -Math.max(0, el.previousElementSibling.getBoundingClientRect().bottom + el.getBoundingClientRect().height)+ 'px'

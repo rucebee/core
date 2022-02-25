@@ -29,5 +29,6 @@ module.exports = {
     'no-multiple-empty-lines': ['warn'],
     'unicorn/prefer-includes': ['off'],
     'vue/this-in-template': ['off'],
+    'vue/no-unused-components': ['warn'],
   },
 }
