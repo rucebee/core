@@ -450,14 +450,12 @@ export class HistorySource extends DataSource {
 
   loadingItem
   historyItem
+  autoNext
   autoHistory
-  fromItem
 
-  constructor (queryNext, queryHistory, limit, period = 0, fromItem, loadingItem, historyItem) {
+  constructor (queryNext, queryHistory, limit, period = 0, {loadingItem, historyItem, autoNext = true, autoHistory = true} = {}) {
     super()
     const list = this.list
-
-    this.fromItem = fromItem
 
     this.limit = limit
     this.minNext = limit >> 1
@@ -466,17 +464,19 @@ export class HistorySource extends DataSource {
 
     this.loadingItem = loadingItem = loadingItem || Object.assign({}, LOADING_ITEM)
     this.loadingItem.id = uuidv4()
-    list.push(loadingItem)
 
     this.historyItem = historyItem = historyItem || Object.assign({}, LOADING_ITEM)
     this.historyItem.id = uuidv4()
 
-    this.autoHistory = historyItem.type === 'loading'
+    this.autoNext = autoNext
+    this.autoHistory = autoHistory
 
-    this.refresh = new PeriodicRefresh(() => queryNext.call(this, list.length <= this.firstIndex ? this.fromItem : list[list.length - 1], limit).then((_list) => {
+    list.push(loadingItem)
+
+    this.refresh = new PeriodicRefresh(() => queryNext.call(this, list, limit).then((_list) => {
       // console.log('refresh', {list, _list})
 
-      if (!this.fromItem && this.firstIndex) {
+      if (this.autoNext && this.firstIndex) {
         list.splice(0, 1, historyItem)
       }
 
@@ -492,7 +492,7 @@ export class HistorySource extends DataSource {
         }
 
         if (_list.length >= limit) {
-          if (!this.fromItem) {
+          if (this.autoNext) {
             this.refresh.query(true)
           }
         } else {
@@ -501,8 +501,8 @@ export class HistorySource extends DataSource {
             list.splice(0, 1)
           }
 
-          if (this.fromItem) {
-            this.fromItem = undefined
+          if (!this.autoNext) {
+            this.autoNext = true
 
             this.refresh.period(period)
           }
@@ -513,7 +513,7 @@ export class HistorySource extends DataSource {
       } else if (!this.historyRefresh.request) {
         this.cutHistory()
       }
-    }), this.fromItem ? 0 : period)
+    }), this.autoNext ? period : 0)
 
     this.historyRefresh = new PeriodicRefresh(() => {
       if (!this.firstIndex || list.length <= this.firstIndex) {
@@ -573,14 +573,14 @@ export class HistorySource extends DataSource {
   }
 
   layout (position, count) {
-    // console.log('layout', {position, count, firstIndex, list, fromItem})
+    // console.log('layout', {position, count, firstIndex, list, autoHistory, autoNext})
 
     if (this.firstIndex && this.list.length > this.firstIndex) {
       if (this.autoHistory && position <= this.minHistory) {
         this.historyRefresh.query()
       }
 
-      if (this.fromItem && position + count - 1 + this.minNext >= this.list.length) {
+      if (!this.autoNext && position + count - 1 + this.minNext >= this.list.length) {
         this.refresh.query()
       }
     }
