@@ -522,7 +522,7 @@ export class HistorySource extends DataSource {
 
       const item = list[this.firstIndex]
 
-      return queryHistory.call(this, list[this.firstIndex], limit).then((_list) => {
+      return queryHistory.call(this, list, limit).then((_list) => {
         if (!_list ||
             !this.firstIndex ||
             list.length <= this.firstIndex ||
