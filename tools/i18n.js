@@ -84,11 +84,11 @@ function i18nToDo () {
   }
 }
 
-function i18nId (pack, text, isDev) {
+function i18nId (pack, text, toDo) {
   text = text.trim()
   const hash = makeHash(text)
 
-  if (!isDev) {
+  if (toDo) {
     touched[hash] = text
     if (todoTimer) {
       clearTimeout(todoTimer)
@@ -113,7 +113,7 @@ export function i18nReplace (dir, locale, isDev) {
       // console.log('xxx', JSON.stringify({ p1, p2 }))
 
       const pack = packs[locale]
-      const id = i18nId(pack, p1.slice(1, -1), isDev)
+      const id = i18nId(pack, p1.slice(1, -1), !isDev)
       if (!id) {
         return match
       }
@@ -136,3 +136,16 @@ export function i18nHash (dir, locale) {
 
   return hashSum.digest('hex')
 }
+
+export async function i18nTable (dir) {
+  _dir = dir
+
+  const locales = (await import(dir + '/index.js')).default
+  //console.log({locales: locales.map(item => item.id)})
+
+  for (const { id } of locales) {
+    console.log(i18nPack(id))
+  }
+}
+
+i18nTable('/Users/ilya-mbp/Devel/chatliker-web/locales')
