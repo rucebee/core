@@ -2,11 +2,12 @@ import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
 import makeHash from 'shorthash2'
-import toSource from 'tosource'
+import readline from 'readline'
 
 let _dir
 
 const packs = {}
+const origin = {}
 const touched = {}
 let todoTimer = 0
 
@@ -21,6 +22,8 @@ function i18nPack (locale) {
       if (text[0] === '-') {
         text = text.substr(1).trim()
         hash = makeHash(text)
+
+        origin[hash] = text
 
         if (!acc[hash]) {
           acc[hash] = text
@@ -72,8 +75,7 @@ function i18nToDo () {
 
       for (const hash of notFound) {
         fs.writeFileSync(inFile,
-          '- ' + touched[hash] + '\n\n',
-          {
+          '- ' + touched[hash] + '\n\n', {
             encoding: 'utf8',
             flag: 'a+',
           })
@@ -144,8 +146,72 @@ export async function i18nTable (dir) {
   //console.log({locales: locales.map(item => item.id)})
 
   for (const { id } of locales) {
-    console.log(i18nPack(id))
+    packs[id] = i18nPack(id)
+  }
+
+  fs.mkdirSync(path.resolve(_dir), { recursive: true })
+
+  let text = 'origin'
+  for (const { id } of locales) {
+    text += '\t' + id
+  }
+
+  text += '\n'
+
+  for (const key in origin) {
+    text += origin[key]?.replace(/[\t\n]+/g, ' ')
+
+    for (const { id } of locales) {
+      text += '\t' + (packs[id]?.[key]?.replace(/[\t\n]+/g, ' ') || '')
+    }
+
+    text += '\n'
+  }
+
+  //console.log(text)
+
+  fs.writeFileSync(path.resolve(_dir, 'index.tsv'), text)
+}
+
+export async function i18nUntable (dir) {
+  _dir = dir
+
+  const rl = readline.createInterface({
+    input: fs.createReadStream(path.resolve(_dir, 'index.tsv')),
+    crlfDelay: Infinity
+  })
+
+  const packs = {}
+
+  let locales
+  for await (const line of rl) {
+    if (!locales) {
+      locales = line.split('\t').slice(1)
+
+      for (const locale of locales) {
+        packs[locale] = ''
+      }
+
+      continue
+    }
+
+    const texts = line.split('\t')
+    for (let i = 1; i < texts.length; i++) {
+      if (texts[i]) {
+        const locale = locales[i - 1]
+        if (!locale) {
+          break
+        }
+        packs[locale] += '= ' + texts[0] + '\n\n- ' + texts[i] + '\n\n'
+      }
+    }
+  }
+
+  for (const key in packs) {
+    if (packs[key]) {
+      fs.writeFileSync(path.resolve(_dir, key + '.table.txt'), packs[key])
+    }
   }
 }
 
-i18nTable('/Users/ilya-mbp/Devel/chatliker-web/locales')
+i18nUntable('/Users/ilya-mbp/Devel/chatliker-web/locales')
