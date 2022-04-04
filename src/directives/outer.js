@@ -22,9 +22,9 @@ function outerHandler (ev) {
       }
 
       if (binding.value) {
-        setTimeout(() => {
+        //setTimeout(() => {
           binding.value(ev)
-        }, 100)
+        //}, 500)
       }
     }
 }

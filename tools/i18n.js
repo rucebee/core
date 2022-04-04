@@ -2,6 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
 import makeHash from 'shorthash2'
+import toSource from 'tosource'
 import readline from 'readline'
 
 let _dir
@@ -202,16 +203,16 @@ export async function i18nUntable (dir) {
         if (!locale) {
           break
         }
-        packs[locale] += '= ' + texts[0] + '\n\n- ' + texts[i] + '\n\n'
+        packs[locale] += '- ' + texts[0] + '\n\n= ' + texts[i].replaceAll(/(?<!\\)'/, '\\\'') + '\n\n'
       }
     }
   }
 
   for (const key in packs) {
     if (packs[key]) {
-      fs.writeFileSync(path.resolve(_dir, key + '.table.txt'), packs[key])
+      fs.writeFileSync(path.resolve(_dir, key + '.txt'), packs[key])
     }
   }
 }
 
-i18nUntable('/Users/ilya-mbp/Devel/chatliker-web/locales')
+//i18nUntable('/Users/ilya-mbp/Devel/chatliker-web/locales')
