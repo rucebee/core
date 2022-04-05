@@ -203,7 +203,7 @@ export async function i18nUntable (dir) {
         if (!locale) {
           break
         }
-        packs[locale] += '- ' + texts[0] + '\n\n= ' + texts[i].replaceAll(/(?<!\\)'/, '\\\'') + '\n\n'
+        packs[locale] += '- ' + texts[0] + '\n\n= ' + texts[i].replaceAll(/(?<!\\)'/g, '\\\'') + '\n\n'
       }
     }
   }
