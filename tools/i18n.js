@@ -215,4 +215,12 @@ export async function i18nUntable (dir) {
   }
 }
 
-//i18nUntable('/Users/ilya-mbp/Devel/chatliker-web/locales')
+const exec = {
+  i18nUntable
+}
+
+if(exec[process.argv[2]]) {
+  exec[process.argv[2]].apply(null, process.argv.slice(3))
+
+  console.log(process.argv[2], process.argv.slice(3), 'complete')
+}

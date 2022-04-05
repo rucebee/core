@@ -10,14 +10,14 @@
   "license": "ISC",
   "keywords": [],
   "dependencies": {
-    "shorthash2": "^1.0.3",
     "lodash": "^4.17.21",
-    "uuid": "^8.3.2",
-    "tosource": "^2.0.0-alpha.3"
+    "shorthash2": "^1.0.3",
+    "tosource": "^2.0.0-alpha.3",
+    "uuid": "^8.3.2"
   },
   "peerDependencies": {
+    "bootstrap": "^5",
     "vue": "^2",
-    "vuex": "^3",
-    "bootstrap": "^5"
+    "vuex": "^3"
   }
 }
