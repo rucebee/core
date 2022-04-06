@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import makeHash from 'shorthash2'
 import toSource from 'tosource'
 import readline from 'readline'
+import { tsv2json } from 'tsv-json'
 
 let _dir
 
@@ -177,36 +178,52 @@ export async function i18nTable (dir) {
 export async function i18nUntable (dir) {
   _dir = dir
 
-  const rl = readline.createInterface({
-    input: fs.createReadStream(path.resolve(_dir, 'index.tsv')),
-    crlfDelay: Infinity
-  })
-
   const packs = {}
 
   let locales
-  for await (const line of rl) {
-    if (!locales) {
-      locales = line.split('\t').slice(1)
 
-      for (const locale of locales) {
-        packs[locale] = ''
-      }
+  const text = fs.readFileSync(path.resolve(_dir, 'index.tsv'), 'utf8')
+  const table = tsv2json(text)
 
-      continue
-    }
-
-    const texts = line.split('\t')
+  locales = table.shift().slice(1)
+  for (const texts of table) {
     for (let i = 1; i < texts.length; i++) {
       if (texts[i]) {
         const locale = locales[i - 1]
         if (!locale) {
           break
         }
-        packs[locale] += '- ' + texts[0] + '\n\n= ' + texts[i].replaceAll(/(?<!\\)'/g, '\\\'') + '\n\n'
+        packs[locale] = (packs[locale] || '') + '- ' + texts[0] + '\n\n= ' + texts[i].replace(/\s+$/g, '').replace(/(?:\r\n|\r|\n){2,}/g, '\n').replace(/(?<!\\)'/g, '\\\'') + '\n\n'
       }
     }
   }
+
+  // const rl = readline.createInterface({
+  //   input: fs.createReadStream(path.resolve(_dir, 'index.tsv')),
+  //   crlfDelay: Infinity
+  // })
+  // for await (const line of rl) {
+  //   if (!locales) {
+  //     locales = line.split('\t').slice(1)
+  //
+  //     for (const locale of locales) {
+  //       packs[locale] = ''
+  //     }
+  //
+  //     continue
+  //   }
+  //
+  //   const texts = line.split('\t')
+  //   for (let i = 1; i < texts.length; i++) {
+  //     if (texts[i]) {
+  //       const locale = locales[i - 1]
+  //       if (!locale) {
+  //         break
+  //       }
+  //       packs[locale] += '- ' + texts[0] + '\n\n= ' + texts[i].replaceAll(/(?<!\\)'/g, '\\\'') + '\n\n'
+  //     }
+  //   }
+  // }
 
   for (const key in packs) {
     if (packs[key]) {
