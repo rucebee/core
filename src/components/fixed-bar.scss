@@ -1,0 +1,25 @@
+.collapse {
+  transition: .5s;
+
+  transform: translateY(0);
+
+  > :last-child {
+    transition: .5s;
+    z-index: 1;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(-100%);
+  }
+
+  &.collapsed {
+    transform: translateY(-100%);
+
+    > :last-child {
+      top: 100%;
+      transform: translateY(0);
+    }
+  }
+}
