@@ -55,7 +55,8 @@ function beforeCreate () {
         }
       }
 
-      addEventListener('resize', onResize, true)
+      addEventListener('resize', onResize)
+      onResize()
     },
 
     updated () {
@@ -68,7 +69,7 @@ function beforeCreate () {
       placeholder.remove()
       dock.remove()
 
-      removeEventListener('resize', onResize, true)
+      removeEventListener('resize', onResize)
       removeEventListener('scroll', onScroll)
     },
   }
