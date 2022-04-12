@@ -49,7 +49,7 @@ function beforeCreate () {
       dock.append(el)
 
       if (el.classList.contains('collapse')) {
-        shortEl = el.children[el.children.length - 1]
+        shortEl = el.children[0]
         if (shortEl) {
           addEventListener('scroll', onScroll)
         }
