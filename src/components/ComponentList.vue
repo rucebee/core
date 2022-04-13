@@ -69,6 +69,16 @@ function doLayout (ev) {
       if (!el) {
         this.bottomOverflow = 0
       } else if (!ev && this.bottomOverflow < 10) {
+        console.log({
+          el_offsetTop: el.offsetTop,
+          el_offsetHeight: el.offsetHeight,
+          doc_clientHeight: doc.clientHeight,
+          doc_offsetHeight: doc.offsetHeight,
+          $el_offsetTop:  this.$el.offsetTop,
+          $el_offsetHeight: this.$el.offsetHeight,
+        })
+
+
         this.bottomOverflow = 0
         window.scroll(0, el.offsetTop + el.offsetHeight - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight) - .9)
       } else {
