@@ -6,10 +6,16 @@
 import loadJs from '../utils/loadJs'
 
 export default {
-  props: ['center', 'zoom', 'options', 'gkey'],
+  props: ['center', 'zoom', 'options', 'gkey', 'locale'],
 
   mounted () {
-    loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' + this.gkey).then(() => {
+    let regionLang = ''
+    if(this.locale) {
+      const arr = this.locale.split('-')
+      regionLang = `&region=${arr[0]}&language==${arr[1]}`
+    }
+
+    loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' + this.gkey + regionLang, null, 'app-gmap').then(() => {
       if (this._isDestroyed) return
 
       const { Map, Marker } = google.maps

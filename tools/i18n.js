@@ -225,6 +225,8 @@ export async function i18nUntable (dir) {
   //   }
   // }
 
+  //console.log(packs['pl-PL'], path.resolve(_dir, 'pl-PL' + '.txt'))
+
   for (const key in packs) {
     if (packs[key]) {
       fs.writeFileSync(path.resolve(_dir, key + '.txt'), packs[key])
