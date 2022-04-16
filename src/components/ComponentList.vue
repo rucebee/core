@@ -1,8 +1,8 @@
 <template>
   <div v-layout="['resize scroll wheel mouseup touchend touchcancel', onLayout]" class="component-list">
     <component
-        :is="itemRenderer(item)"
         v-for="(item, index) in listData"
+        :is="itemRenderer(item)"
         :key="item.id"
         :item="item"
         :position="index"
@@ -22,7 +22,6 @@ import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
-
 
 document.documentElement.style.scrollBehavior = 'auto'
 
@@ -58,38 +57,6 @@ function doLayout (ev) {
   // })
 
   if (this.source) {
-    if (this.bottom) {
-      const doc = document.documentElement
-      const el = this.$el.children[this.$el.children.length - 1]
-
-      // console.log({
-      //   ev, bottomOverflow: this.bottomOverflow,
-      // })
-
-      if (!el) {
-        this.bottomOverflow = 0
-      } else if (!ev && this.bottomOverflow < 10) {
-        console.log({
-          el_offsetTop: el.offsetTop,
-          el_offsetHeight: el.offsetHeight,
-          doc_clientHeight: doc.clientHeight,
-          doc_offsetHeight: doc.offsetHeight,
-          $el_offsetTop:  this.$el.offsetTop,
-          $el_offsetHeight: this.$el.offsetHeight,
-        })
-
-
-        this.bottomOverflow = 0
-        window.scroll(0, el.offsetTop + el.offsetHeight - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight) - .9)
-      } else {
-        this.bottomOverflow = el.offsetTop + el.offsetHeight - window.scrollY - doc.clientHeight + (doc.offsetHeight - this.$el.offsetTop - this.$el.offsetHeight)
-
-        // console.log({
-        //   bottomOverflow: this.bottomOverflow,
-        // })
-      }
-    }
-
     this.source.layout(position, count)
   }
 }
@@ -106,10 +73,14 @@ export default {
   },
 
   data () {
+    const doc = document.documentElement
+
     this.position = 0
     this.count = 0
     this.layoutTimer = 0
-    this.bottomOverflow = 0
+    this.scrollBottom = doc.offsetHeight - doc.clientHeight - scrollY
+    this.ignoreNextScroll = 0
+    this.oneRem = parseFloat(getComputedStyle(doc).fontSize)
 
     return {
       listData: this.list,
@@ -156,17 +127,41 @@ export default {
     },
 
     onLayout (ev) {
-      if (this.layoutTimer) {
-        clearTimeout(this.layoutTimer)
-        this.layoutTimer = 0
+      if (this.bottom) {
+        if (ev?.type === 'scroll') {
+          if (this.ignoreNextScroll && this.ignoreNextScroll + 500 > Date.now()) {
+            return
+          }
+
+          this.ignoreNextScroll = 0
+        }
+
+        const doc = document.documentElement
+        const scrollBottom = doc.offsetHeight - doc.clientHeight - scrollY
+
+        if ((!ev || ev.type === 'resize')) {
+          if (this.scrollBottom < this.oneRem) {
+            scrollTo(scrollX, doc.offsetHeight - doc.clientHeight - this.scrollBottom)
+            this.ignoreNextScroll = Date.now()
+          }
+        } else {
+          this.scrollBottom = scrollBottom
+        }
       }
 
       if (!ev || ['mouseup', 'touchend', 'touchcancel'].indexOf(ev.type) > -1) {
-        doLayout.apply(this, [ev])
+        doLayout.call(this, ev)
       } else {
+        if (this.layoutTimer) {
+          clearTimeout(this.layoutTimer)
+          this.layoutTimer = 0
+        }
+
         this.layoutTimer = setTimeout(() => {
+          this.layoutTimer = 0
+
           if (!this._isDestroyed) {
-            doLayout.apply(this, [ev])
+            doLayout.call(this, ev)
           }
         }, 1000)
       }
@@ -463,7 +458,12 @@ export class HistorySource extends DataSource {
   autoNext
   autoHistory
 
-  constructor (queryNext, queryHistory, limit, period = 0, {loadingItem, historyItem, autoNext = true, autoHistory = true} = {}) {
+  constructor (queryNext, queryHistory, limit, period = 0, {
+    loadingItem,
+    historyItem,
+    autoNext = true,
+    autoHistory = true
+  } = {}) {
     super()
     const list = this.list
 
@@ -491,6 +491,8 @@ export class HistorySource extends DataSource {
       }
 
       if (_list.length) {
+        const len = list.length - this.firstIndex
+
         if (list.length <= this.firstIndex) {
           list.push(..._list)
         } else {
@@ -516,6 +518,10 @@ export class HistorySource extends DataSource {
 
             this.refresh.period(period)
           }
+        }
+
+        if(this.vm) {
+          this.vm.$emit('itemsNext', this, len, list.length - this.firstIndex)
         }
       } else if (list.length <= this.firstIndex && this.firstIndex) {
         this.firstIndex = 0
