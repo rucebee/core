@@ -22,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
+import clientHeight from '../utils/clientHeight'
 
 document.documentElement.style.scrollBehavior = 'auto'
 
@@ -137,11 +138,11 @@ export default {
         }
 
         const doc = document.documentElement
-        const scrollBottom = doc.offsetHeight - doc.clientHeight - scrollY
+        const scrollBottom = doc.offsetHeight - clientHeight() - scrollY
 
         if ((!ev || ev.type === 'resize')) {
           if (this.scrollBottom < this.oneRem) {
-            scrollTo(scrollX, doc.offsetHeight - doc.clientHeight - this.scrollBottom)
+            scrollTo(scrollX, doc.offsetHeight - clientHeight() - this.scrollBottom)
             this.ignoreNextScroll = Date.now()
           }
         } else {
@@ -428,9 +429,9 @@ export class WaterfallSource extends DataSource {
       this.refresh.query()
     }
 
-    if (position > this.maxBwd) {
-      this.list.splice(0, position - this.maxBwd)
-    }
+    // if (position > this.maxBwd) {
+    //   this.list.splice(0, position - this.maxBwd)
+    // }
   }
 
   reset (position = -1) {
