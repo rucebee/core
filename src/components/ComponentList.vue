@@ -1,5 +1,5 @@
 <template>
-  <div v-layout="['resize scroll wheel mouseup touchend touchcancel', onLayout]" class="component-list">
+  <div v-layout="['resize scroll', onLayout]" class="component-list">
     <component
         v-for="(item, index) in listData"
         :is="itemRenderer(item)"
@@ -16,51 +16,18 @@ import Vue from 'vue'
 
 import noop from 'lodash/noop'
 import findLast from 'lodash/findLast'
-import findIndex from 'lodash/findIndex'
+import findLastIndex from 'lodash/findLastIndex'
 import find from 'lodash/find'
+import findIndex from 'lodash/findIndex'
 import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
 import clientHeight from '../utils/clientHeight'
+import completeScroll from '../utils/completeScroll'
 
 document.documentElement.style.scrollBehavior = 'auto'
-
-function doLayout (ev) {
-  let position = 0
-  let count = 0
-  for (const el of this.$el.children) {
-    const rect = el.getBoundingClientRect()
-
-    if (rect.bottom < 0) {
-      position++
-      continue
-    }
-    if (rect.top > innerHeight) {
-      break
-    }
-
-    count++
-  }
-
-  if (!count) {
-    position = 0
-  }
-
-  this.position = position
-  this.count = count
-
-  // console.log({
-  //   position,
-  //   count,
-  //   ev,
-  //   src: this.source,
-  // })
-
-  if (this.source) {
-    this.source.layout(position, count)
-  }
-}
+export const oneRem = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
 export default {
   directives: {
@@ -71,17 +38,21 @@ export default {
     list: Array,
     source: Object,
     bottom: Boolean,
+    anchor: {
+      type: Function,
+      default: () => true,
+    }
   },
 
   data () {
     const doc = document.documentElement
 
-    this.position = 0
+    this.position = -1
     this.count = 0
+    this.key = null
+    this.offset = 0
     this.layoutTimer = 0
     this.scrollBottom = doc.offsetHeight - doc.clientHeight - scrollY
-    this.ignoreNextScroll = 0
-    this.oneRem = parseFloat(getComputedStyle(doc).fontSize)
 
     return {
       listData: this.list,
@@ -104,6 +75,9 @@ export default {
 
     listData: {
       handler () {
+        //console.log('onLayout handler')
+
+        //this.onLayout()
         this.$nextTick(this.onLayout)
       },
       deep: true,
@@ -113,6 +87,7 @@ export default {
   mounted () {
     if (this.source) {
       this.source.attach(this)
+      //this.onLayout()
       this.$nextTick(this.onLayout)
     }
   },
@@ -124,47 +99,127 @@ export default {
   },
 
   methods: {
-    positionSmooth (position) {
+    positionSmooth (position, offset) {
+      if (position > -1) {
+        this.$nextTick(() => {
+          const top = this.$children[position]?.$el?.offsetTop
+          //console.log('positionSmooth', { top, offset })
+
+          if (top !== undefined) {
+            this.$nextTick(() => {
+              //console.log('positionSmooth scroll', { top, offset })
+
+              scrollTo({
+                top: top - offset,
+                behavior: 'smooth',
+              })
+            })
+          }
+        })
+      }
     },
 
     onLayout (ev) {
-      if (this.bottom) {
-        if (ev?.type === 'scroll') {
-          if (this.ignoreNextScroll && this.ignoreNextScroll + 500 > Date.now()) {
-            return
+      if (this.layoutTimer) {
+        clearTimeout(this.layoutTimer)
+        this.layoutTimer = 0
+      }
+
+      if (!ev || ev.type === 'resize') {
+        if (completeScroll(true)) {
+          this.layoutTimer = setTimeout(() => {
+            this.layoutTimer = 0
+
+            if (!this._isDestroyed) {
+              this.onLayout({})
+            }
+          }, 500)
+
+          return
+        } else if (this.bottom && this.scrollBottom < oneRem) {
+          //console.log('restore', this.scrollBottom)
+
+          scrollTo(scrollX, document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
+          return
+        } else if (this.key) {
+          for (const child of this.$el.children) {
+            if (child.__vue__.$vnode.key === this.key) {
+              const { top } = child.getBoundingClientRect()
+              if (this.offset !== top) {
+                //console.log('restore', child.__vue__.item?.text, top - this.offset, ev?.type)
+
+                scrollTo(scrollX, scrollY - this.offset + top)
+                return
+              }
+
+              break
+            }
           }
-
-          this.ignoreNextScroll = 0
-        }
-
-        const doc = document.documentElement
-        const scrollBottom = doc.offsetHeight - clientHeight() - scrollY
-
-        if ((!ev || ev.type === 'resize')) {
-          if (this.scrollBottom < this.oneRem) {
-            scrollTo(scrollX, doc.offsetHeight - clientHeight() - this.scrollBottom)
-            this.ignoreNextScroll = Date.now()
-          }
-        } else {
-          this.scrollBottom = scrollBottom
         }
       }
 
-      if (!ev || ['mouseup', 'touchend', 'touchcancel'].indexOf(ev.type) > -1) {
-        doLayout.call(this, ev)
-      } else {
-        if (this.layoutTimer) {
-          clearTimeout(this.layoutTimer)
-          this.layoutTimer = 0
+      let position = 0
+      let count = 0
+
+      const _clientHeight = clientHeight()
+
+      for (const el of this.$el.children) {
+        const rect = el.getBoundingClientRect()
+
+        if (rect.bottom < 0) {
+          position++
+          continue
         }
 
-        this.layoutTimer = setTimeout(() => {
-          this.layoutTimer = 0
+        if (rect.top > _clientHeight) {
+          break
+        }
 
-          if (!this._isDestroyed) {
-            doLayout.call(this, ev)
+        count++
+      }
+
+      if (!count) {
+        position = -1
+      }
+
+      this.scrollBottom = document.documentElement.offsetHeight - _clientHeight - scrollY
+
+      let child
+
+      if (position > -1) {
+        for (let i = position; i < position + count; i++) {
+          child = this.$el.children[i]
+          if (!this.anchor(child.__vue__.item)) {
+            child = null
+            continue
           }
-        }, 1000)
+
+          this.key = child.__vue__.$vnode.key
+          this.offset = child.getBoundingClientRect().top
+
+          //console.log('save', child.__vue__.item?.text, this.offset, ev?.type)
+
+          break
+        }
+      }
+
+      if (!child) {
+        this.key = null
+        this.offset = 0
+      }
+
+      this.position = position
+      this.count = count
+
+      // console.log({
+      //   position,
+      //   count,
+      //   ev,
+      //   src: this.source,
+      // })
+
+      if (this.source) {
+        this.source.layout(position, count)
       }
     },
 
@@ -314,11 +369,19 @@ export class DataSource {
   }
 
   findItem (id) {
-    return find(this.list, ['id', id])
+    return find(this.list, typeof id === 'function' ? id : ['id', id])
   }
 
   findPosition (id) {
-    return findIndex(this.list, ['id', id])
+    return findIndex(this.list, typeof id === 'function' ? id : ['id', id])
+  }
+
+  findLastItem (id) {
+    return findLast(this.list, typeof id === 'function' ? id : ['id', id])
+  }
+
+  findLastPosition (id) {
+    return findLastIndex(this.list, typeof id === 'function' ? id : ['id', id])
   }
 
   remove (positionOrItem, count = 1) {
@@ -352,14 +415,6 @@ export class DataSource {
     }
 
     return _item
-  }
-
-  findLast (fn) {
-    for (let i = this.list.length - 1; i >= 0; i--) {
-      if (fn(this.list[i])) {
-        return this.list[i]
-      }
-    }
   }
 }
 
@@ -399,26 +454,30 @@ export class WaterfallSource extends DataSource {
     this.loading = true
     list.push(loadingItem)
 
-    this.refresh = new PeriodicRefresh(() => {
+    this.refresh = new PeriodicRefresh(async () => {
       const item = list.length > 1 ? list[list.length - 2] : undefined
 
-      return query.call(this, item, limit).then((_list) => {
-        if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined)) {
-          return
-        }
+      const _list = await query.call(this, item, limit)
 
-        if (_list?.length) {
-          list.splice(list.length - 1, 0, ..._list)
+      await completeScroll()
 
-          if (!this.loading) {
-            this.loading = true
-            this.list.push(loadingItem)
-          }
-        } else if (this.loading) {
+      if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined)) {
+        return
+      }
+
+      if (_list?.length) {
+        list.splice(list.length - 1, 0, ..._list)
+      }
+
+      if (_list?.length < limit) {
+        if (this.loading) {
           this.loading = false
           this.list.splice(list.length - 1, 1)
         }
-      })
+      } else if (!this.loading) {
+        this.loading = true
+        this.list.push(loadingItem)
+      }
     }, 0)
   }
 
@@ -482,26 +541,25 @@ export class HistorySource extends DataSource {
     this.autoNext = autoNext
     this.autoHistory = autoHistory
 
+    let initializing = true
     list.push(loadingItem)
 
-    this.refresh = new PeriodicRefresh(() => queryNext.call(this, list, limit).then((_list) => {
+    this.refresh = new PeriodicRefresh(async () => {
+      const _list = await queryNext.call(this, list, limit)
+
+      await completeScroll()
+
       // console.log('refresh', {list, _list})
 
-      if (this.autoNext && this.firstIndex) {
+      if (initializing) {
         list.splice(0, 1, historyItem)
       }
 
       if (_list.length) {
-        const len = list.length - this.firstIndex
+        list.push(..._list)
 
-        if (list.length <= this.firstIndex) {
-          list.push(..._list)
-        } else {
-          list.push(..._list)
-
-          if (!this.historyRefresh.request) {
-            this.cutHistory()
-          }
+        if (list.length > this.firstIndex && !this.historyRefresh.request) {
+          this.cutHistory()
         }
 
         if (_list.length >= limit) {
@@ -520,34 +578,35 @@ export class HistorySource extends DataSource {
             this.refresh.period(period)
           }
         }
-
-        if(this.vm) {
-          this.vm.$emit('itemsNext', this, len, list.length - this.firstIndex)
-        }
       } else if (list.length <= this.firstIndex && this.firstIndex) {
         this.firstIndex = 0
         list.splice(0, 1)
       } else if (!this.historyRefresh.request) {
         this.cutHistory()
       }
-    }), this.autoNext ? period : 0)
 
-    this.historyRefresh = new PeriodicRefresh(() => {
+      this.vm?.$emit('itemsChange', this, initializing)
+      initializing = false
+    }, this.autoNext ? period : 0)
+
+    this.historyRefresh = new PeriodicRefresh(async () => {
       if (!this.firstIndex || list.length <= this.firstIndex) {
-        return Promise.resolve()
+        return
       }
 
       const item = list[this.firstIndex]
+      const _list = await queryHistory.call(this, list, limit)
 
-      return queryHistory.call(this, list, limit).then((_list) => {
-        if (!_list ||
-            !this.firstIndex ||
-            list.length <= this.firstIndex ||
-            item.id !== list[this.firstIndex].id ||
-            this.cutHistory()) {
-          return
-        }
+      await completeScroll()
 
+      if (!_list ||
+          !this.firstIndex ||
+          list.length <= this.firstIndex ||
+          item.id !== list[this.firstIndex].id) {
+        return
+      }
+
+      if (!this.cutHistory()) {
         if (_list.length) {
           list.splice(this.firstIndex, 0, ..._list)
         }
@@ -556,7 +615,9 @@ export class HistorySource extends DataSource {
           this.firstIndex = 0
           list.splice(0, 1)
         }
-      })
+      }
+
+      this.vm?.$emit('itemsChange', this, false)
     }, 0)
   }
 

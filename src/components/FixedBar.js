@@ -2,6 +2,7 @@ import mergeWith from 'lodash/mergeWith'
 import defaults from 'lodash/defaults'
 
 import './fixed-bar.scss'
+import clientHeight from '../utils/clientHeight'
 
 function beforeCreate () {
   let placeholder, dock
@@ -77,7 +78,17 @@ function beforeCreate () {
   mergeWith(this.$options, mixin, (objValue, srcValue) =>
     Array.isArray(objValue) ? objValue.concat([srcValue]) : (objValue ? undefined : [srcValue]))
 
-  this.$options.methods = defaults({}, this.$options.methods)
+  this.$options.methods = defaults({
+    getHeight: () => el.offsetHeight,
+    getShortHeight: () => shortEl.offsetHeight,
+    getMargin: () => shortEl
+      ? (
+        (document.documentElement.offsetHeight - clientHeight()) > (el.offsetHeight - shortEl.offsetHeight)
+          ? shortEl.offsetHeight
+          : el.offsetHeight
+      )
+      : el.offsetHeight,
+  }, this.$options.methods)
 
   this.$options.computed = defaults({}, this.$options.computed)
 }
