@@ -40,7 +40,7 @@ export default {
     bottom: Boolean,
     anchor: {
       type: Function,
-      default: () => true,
+      default: item => item && item.type !== 'loading',
     }
   },
 
