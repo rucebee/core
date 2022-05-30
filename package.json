@@ -1,6 +1,6 @@
 {
   "name": "@rucebee/core",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "Core utils and components",
   "scripts": {
     "build": "rm -f *.js && babel src -d .",
@@ -18,7 +18,7 @@
   },
   "peerDependencies": {
     "bootstrap": "^5",
-    "vue": "^2",
-    "vuex": "^3"
+    "vue": ">=2",
+    "vuex": ">=3"
   }
 }
