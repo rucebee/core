@@ -8,7 +8,6 @@ function beforeCreate () {
   let placeholder, dock
 
   let el, shortEl
-  let doc// = document.documentElement
 
   const onScroll = (ev) => {
     const scrollTop = scrollY
@@ -31,7 +30,6 @@ function beforeCreate () {
 
   const mixin = {
     mounted () {
-      doc = document.documentElement
       placeholder = document.createElement('div')
 
       dock = document.createElement('div')
