@@ -4,6 +4,8 @@ import defaults from 'lodash/defaults'
 import './fixed-bar.scss'
 import clientHeight from '../utils/clientHeight'
 
+let wrapper
+
 function beforeCreate () {
   let placeholder, dock
 
@@ -30,18 +32,24 @@ function beforeCreate () {
 
   const mixin = {
     mounted () {
+      if(!wrapper) {
+        wrapper = document.createElement('div')
+        wrapper.style.zIndex = 1030
+        wrapper.style.position = 'relative'
+        document.body.prepend(wrapper)
+      }
+
       placeholder = document.createElement('div')
 
       dock = document.createElement('div')
       const dockStyle = dock.style
       dockStyle.position = 'fixed'
-      dockStyle.zIndex = 1030
       dockStyle.left = 0
       dockStyle.right = 0
       this.bottom
         ? dockStyle.bottom = 0
         : dockStyle.top = 0
-      document.body.prepend(dock)
+      wrapper.append(dock)
 
       el = this.$el
       el.after(placeholder)
