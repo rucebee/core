@@ -85,15 +85,13 @@ function beforeCreate () {
     Array.isArray(objValue) ? objValue.concat([srcValue]) : (objValue ? undefined : [srcValue]))
 
   this.$options.methods = defaults({
-    getHeight: () => el.offsetHeight,
-    getShortHeight: () => shortEl.offsetHeight,
     getMargin: () => shortEl
       ? (
         (document.documentElement.offsetHeight - clientHeight()) > (el.offsetHeight - shortEl.offsetHeight)
-          ? shortEl.offsetHeight
-          : el.offsetHeight
+          ? el.offsetHeight - shortEl.offsetHeight
+          : 0
       )
-      : el.offsetHeight,
+      : 0,
   }, this.$options.methods)
 
   this.$options.computed = defaults({}, this.$options.computed)

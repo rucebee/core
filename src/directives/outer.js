@@ -47,11 +47,9 @@ export default {
     if (index > -1) outers.splice(index, 1);
 
     const events = [];
-    if (binding.value) {
-      for (const name in bindingEvents)
-        if (binding[name]) events.push(...(bindingEvents[name] || [name]));
-      if (!events.length) events.push(...allEvents);
-    }
+    for (const name in bindingEvents)
+      if (binding[name]) events.push(...(bindingEvents[name] || [name]));
+    if (!events.length) events.push(...allEvents);
 
     if (!outers.length) for (const event of allEvents) addEventListener(event, outerHandler);
 

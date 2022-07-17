@@ -99,22 +99,49 @@ export default {
   },
 
   methods: {
-    positionSmooth (position, offset) {
+    positionSmooth (position, offset = 0, align = 'detect') {
       if (position > -1) {
         this.$nextTick(() => {
-          const top = this.$children[position]?.$el?.offsetTop
-          //console.log('positionSmooth', { top, offset })
-
-          if (top !== undefined) {
-            this.$nextTick(() => {
-              //console.log('positionSmooth scroll', { top, offset })
-
-              scrollTo({
-                top: top - offset,
-                behavior: 'smooth',
-              })
-            })
+          const b0 = this.$el.children[position]?.getBoundingClientRect()
+          if (!b0) {
+            return
           }
+
+          const b1 = document.body.getBoundingClientRect()
+          const b2 = this.$el.getBoundingClientRect()
+
+          const top = b2.top - b1.top
+          const bottom = document.documentElement.clientHeight - b1.bottom + b2.bottom
+
+          if (align === 'detect') {
+            if (b0.top >= top && b0.bottom <= bottom) {
+              return
+            }
+
+            align = Math.abs(b0.top - top) < Math.abs(b0.bottom - bottom) ? 'top' : 'bottom'
+          }
+
+          let to = 0
+          if (align === 'top') {
+            to = -(top + offset - scrollY - b0.top)
+          } else {
+            to = -(bottom - offset - scrollY - b0.bottom)
+          }
+
+          // console.log('positionSmooth', {
+          //   position,
+          //   align,
+          //   top,
+          //   bottom,
+          //   offset,
+          //   to,
+          //   b0, b1, b2
+          // })
+
+          scrollTo({
+            top: to,
+            behavior: 'smooth',
+          })
         })
       }
     },
@@ -137,7 +164,8 @@ export default {
 
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
-          //console.log('restore', this.scrollBottom)
+          // console.log('restore', this.scrollBottom,
+          //     scrollY, '->', document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
 
           scrollTo(scrollX, document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
           return
@@ -146,7 +174,8 @@ export default {
             if (child.__vue__.$vnode.key === this.key) {
               const { top } = child.getBoundingClientRect()
               if (this.offset !== top) {
-                //console.log('restore', child.__vue__.item?.text, top - this.offset, ev?.type)
+                // console.log('restore', child.__vue__.item?.text?.substr(0, 6), top - this.offset, ev?.type,
+                //     scrollY, '->', scrollY - this.offset + top)
 
                 scrollTo(scrollX, scrollY - this.offset + top)
                 return
@@ -197,7 +226,7 @@ export default {
           this.key = child.__vue__.$vnode.key
           this.offset = child.getBoundingClientRect().top
 
-          //console.log('save', child.__vue__.item?.text, this.offset, ev?.type)
+          // console.log('save', child.__vue__.item?.text?.substr(0, 6), this.offset, ev?.type)
 
           break
         }
