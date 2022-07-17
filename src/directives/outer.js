@@ -1,76 +1,71 @@
-import Vue from 'vue'
+// Usage:
+// 1. <div v-outer[.children][.click][.wheel]="callbackFunction" ... - callbackFunction(ev) is called on an outer event
+// 2. <a v-outer[.children] ... - This element events are not outer
 
-let outers
+// Modifiers
+// children - self event is outer
+// click - only 'touchstart', 'mousedown' events
+// wheel - only 'wheel' event
 
-function outerHandler (ev) {
-  // eslint-disable-next-line no-labels
-  main:
-    for (const {
-      el,
-      binding,
-      vnode
-    } of outers) {
-      let p = ev.target
-      while (p) {
-        if (p === el)
-          // eslint-disable-next-line no-labels
-        {
-          continue main
-        }
+// Value
+// The callbackFunction is called when defined and
+// the event matches the directive events
+//
+// NOT "callbackFunction()"
 
-        p = p.parentElement
-      }
+const bindingEvents = { wheel: null, click: ['touchstart', 'mousedown'] };
+const allEvents = [];
+for (const name in bindingEvents) allEvents.push(...(bindingEvents[name] || [name]));
+const outers = [];
 
-      if (binding.value) {
-        //setTimeout(() => {
-          binding.value(ev)
-        //}, 500)
-      }
+function outerHandler(ev) {
+  let p = ev.target;
+  while (p) {
+    for (const { el, binding } of outers)
+      if ((binding.modifiers.children ? p.parentElement : p) === el) return;
+
+    p = p.parentElement;
+  }
+
+  for (const { el, binding, events } of outers)
+    switch (typeof binding.value) {
+      case 'function':
+        if (events.includes(ev.type)) binding.value(ev);
+        break;
+
+      case 'undefined':
+        break;
+
+      default:
+        console.warn('outer directive value is not a function', el);
     }
 }
 
 export default {
-  bind (el, binding, vnode) {
-    // console.log('outer bind', {
-    //   el,
-    //   binding,
-    //   vnode,
-    // })
+  bind(el, binding) {
+    const index = outers.findIndex((o) => o.el === el);
+    if (index > -1) outers.splice(index, 1);
 
-    if (!outers) {
-      outers = []
-
-      addEventListener('wheel', outerHandler)
-      addEventListener('touchstart', outerHandler)
-      addEventListener('mousedown', outerHandler)
+    const events = [];
+    if (binding.value) {
+      for (const name in bindingEvents)
+        if (binding[name]) events.push(...(bindingEvents[name] || [name]));
+      if (!events.length) events.push(...allEvents);
     }
 
-    const index = outers.findIndex(o => o.el === el)
-    if (index > -1) {
-      outers.splice(index, 1)
-    }
+    if (!outers.length) for (const event of allEvents) addEventListener(event, outerHandler);
 
     outers.push({
       el,
       binding,
-      vnode
-    })
+      events,
+    });
   },
 
-  unbind (el, binding, vnode) {
-    // console.log('outer unbind', {
-    //   el,
-    //   binding,
-    //   vnode,
-    // })
+  unbind(el) {
+    const index = outers.findIndex((o) => o.el === el);
+    if (index > -1) outers.splice(index, 1);
 
-    const index = outers.findIndex(o => o.el === el)
-    if (index > -1) {
-      outers.splice(index, 1)
-    }
-
-    // removeEventListener('wheel', outerHandler)
-    // removeEventListener('touchstart', outerHandler)
-    // removeEventListener('mousedown', outerHandler)
+    if (!outers.length) for (const event of allEvents) removeEventListener(event, outerHandler);
   },
-}
+};
