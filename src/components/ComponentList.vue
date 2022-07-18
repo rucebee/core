@@ -99,7 +99,7 @@ export default {
   },
 
   methods: {
-    positionSmooth (position, offset = 0, align = 'detect') {
+    positionSmooth (position, offset = 0, _align = 'detect') {
       if (position > -1) {
         this.$nextTick(() => {
           const b0 = this.$el.children[position]?.getBoundingClientRect()
@@ -113,6 +113,7 @@ export default {
           const top = b2.top - b1.top
           const bottom = document.documentElement.clientHeight - b1.bottom + b2.bottom
 
+          let align = _align
           if (align === 'detect') {
             if (b0.top >= top && b0.bottom <= bottom) {
               return
@@ -123,25 +124,37 @@ export default {
 
           let to = 0
           if (align === 'top') {
-            to = -(top + offset - scrollY - b0.top)
+            // to = -(top + offset - scrollY - b0.top)
+            to = scrollY + b0.top - top - offset
+
+            const fixedTop = window.$fixedTop?.()
+            if (fixedTop && to > fixedTop) {
+              if (_align === 'detect' && b0.top >= top - fixedTop) {
+                return
+              }
+              to += fixedTop
+            }
           } else {
-            to = -(bottom - offset - scrollY - b0.bottom)
+            // to = -(bottom - offset - scrollY - b0.bottom)
+            to = offset + scrollY + b0.bottom - bottom
           }
 
-          // console.log('positionSmooth', {
-          //   position,
-          //   align,
-          //   top,
-          //   bottom,
-          //   offset,
-          //   to,
-          //   b0, b1, b2
-          // })
+          console.log('positionSmooth', {
+            position,
+            align,
+            top,
+            bottom,
+            offset,
+            to,
+            b0,
+            b1,
+            b2
+          })
 
-          scrollTo({
+          this.$nextTick(() => scrollTo({
             top: to,
             behavior: 'smooth',
-          })
+          }))
         })
       }
     },
@@ -164,8 +177,8 @@ export default {
 
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
-          // console.log('restore', this.scrollBottom,
-          //     scrollY, '->', document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
+          console.log('restore', this.scrollBottom,
+              scrollY, '->', document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
 
           scrollTo(scrollX, document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
           return
@@ -174,8 +187,8 @@ export default {
             if (child.__vue__.$vnode.key === this.key) {
               const { top } = child.getBoundingClientRect()
               if (this.offset !== top) {
-                // console.log('restore', child.__vue__.item?.text?.substr(0, 6), top - this.offset, ev?.type,
-                //     scrollY, '->', scrollY - this.offset + top)
+                console.log('restore', child.__vue__.item?.text?.substr(0, 6), top - this.offset, ev?.type,
+                    scrollY, '->', scrollY - this.offset + top)
 
                 scrollTo(scrollX, scrollY - this.offset + top)
                 return
@@ -274,7 +287,8 @@ export default {
         },
       })
     },
-  },
+  }
+  ,
 }
 
 export function PeriodicRefresh (query, period) {

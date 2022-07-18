@@ -11,6 +11,10 @@ function beforeCreate () {
 
   let el, shortEl
 
+  const fixedTop = () => shortEl && !el.classList.contains('lock')
+    ? el.offsetHeight - shortEl.offsetHeight
+    : 0
+
   const onScroll = (ev) => {
     const scrollTop = scrollY
     const heightDelta = el.offsetHeight - shortEl.offsetHeight
@@ -32,7 +36,7 @@ function beforeCreate () {
 
   const mixin = {
     mounted () {
-      if(!wrapper) {
+      if (!wrapper) {
         wrapper = document.createElement('div')
         wrapper.style.zIndex = 1030
         wrapper.style.position = 'relative'
@@ -42,13 +46,7 @@ function beforeCreate () {
       placeholder = document.createElement('div')
 
       dock = document.createElement('div')
-      const dockStyle = dock.style
-      dockStyle.position = 'fixed'
-      dockStyle.left = 0
-      dockStyle.right = 0
-      this.bottom
-        ? dockStyle.bottom = 0
-        : dockStyle.top = 0
+      dock.className = this.bottom ? 'fixed-bar-bottom'  : 'fixed-bar-top'
       wrapper.append(dock)
 
       el = this.$el
@@ -59,6 +57,7 @@ function beforeCreate () {
         shortEl = el.children[0]
         if (shortEl) {
           addEventListener('scroll', onScroll)
+          if(!this.bottom) window.$fixedTop = fixedTop
         }
       }
 
@@ -71,7 +70,8 @@ function beforeCreate () {
     },
 
     beforeDestroy () {
-      // placeholder.before(el)
+      if(window.$fixedTop === fixedTop)
+        delete window.$fixedTop
 
       placeholder.remove()
       dock.remove()
@@ -83,16 +83,6 @@ function beforeCreate () {
 
   mergeWith(this.$options, mixin, (objValue, srcValue) =>
     Array.isArray(objValue) ? objValue.concat([srcValue]) : (objValue ? undefined : [srcValue]))
-
-  this.$options.methods = defaults({
-    getMargin: () => shortEl
-      ? (
-        (document.documentElement.offsetHeight - clientHeight()) > (el.offsetHeight - shortEl.offsetHeight)
-          ? el.offsetHeight - shortEl.offsetHeight
-          : 0
-      )
-      : 0,
-  }, this.$options.methods)
 
   this.$options.computed = defaults({}, this.$options.computed)
 }

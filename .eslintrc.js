@@ -23,7 +23,7 @@ module.exports = {
     'require-await': ['warn'],
     'no-mixed-operators': ['off'],
     curly: ['warn', 'multi', 'consistent'],
-    'nonblock-statement-body-position': ['warn', 'beside'],
+    'nonblock-statement-body-position': ['warn', 'below'],
     'no-unused-expressions': ['warn', { allowTernary: true }],
     'no-throw-literal': ['warn'],
     'no-unreachable': ['warn'],

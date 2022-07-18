@@ -1,25 +1,26 @@
-.collapse-1 {
-  transition: .5s;
+.fixed-bar-top, .fixed-bar-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  pointer-events: none;
 
-  transform: translateY(0);
-
-  > :last-child {
-    transition: .5s;
-    z-index: 1;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    transform: translateY(-100%);
+  > :not(.collapse) {
+    pointer-events: all;
   }
 
-  &.collapsed {
-    transform: translateY(-100%);
+  > .collapse {
+    pointer-events: none;
 
-    > :last-child {
-      top: 100%;
-      transform: translateY(0);
+    > * {
+      pointer-events: all;
     }
   }
+}
+
+.fixed-bar-top {
+  top: 0;
+}
+
+.fixed-bar-bottom {
+  bottom: 0;
 }
