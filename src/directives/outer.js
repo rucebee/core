@@ -13,42 +13,46 @@
 //
 // NOT "callbackFunction()"
 
-import Hammer from 'hammerjs'
-
 const bindingEvents = {
-  wheel: null,
-  click: ['touchstart', 'mousedown'],
-  swipe: 'hammer',
+  wheel: { wheel: handlerOuterAbs },
+  click: {
+    touchstart: ({ target }) => handleOuter({
+      type: 'click',
+      target
+    }),
+    mousedown: ({ target }) => handleOuter({
+      type: 'click',
+      target,
+    }),
+  },
+  swipe: {
+    touchstart: handleTouchStart,
+    touchmove: handleTouchMove,
+  },
 }
-const absEvents = ['swipe', 'wheel']
-const allEvents = []
-for (const name in bindingEvents) {
-  if (bindingEvents[name] !== 'hammer') {
-    allEvents.push(...(bindingEvents[name] || [name]))
-  }
-}
+
 const outers = []
 
-let hammer
-
-function outerHandler (ev) {
-  console.log('outer', ev.type)
-
-  if(!absEvents.includes(ev.type)) {
-    let p = ev.target
-    while (p) {
-      for (const {
-        el,
-        binding
-      } of outers) {
-        if ((binding.modifiers.children ? p.parentElement : p) === el) {
-          return
-        }
+function handleOuter (ev) {
+  let p = ev.target
+  while (p) {
+    for (const {
+      el,
+      binding
+    } of outers) {
+      if ((binding.modifiers.children ? p.parentElement : p) === el) {
+        return
       }
-
-      p = p.parentElement
     }
+
+    p = p.parentElement
   }
+
+  handlerOuterAbs(ev)
+}
+
+function handlerOuterAbs (ev) {
+  //console.log('outer', ev.type)
 
   for (const {
     el,
@@ -71,6 +75,48 @@ function outerHandler (ev) {
   }
 }
 
+let xDown = null
+let yDown = null
+
+function handleTouchStart (ev) {
+  const firstTouch = ev.touches[0]
+  xDown = firstTouch.clientX
+  yDown = firstTouch.clientY
+}
+
+function handleTouchMove (ev) {
+  if (!xDown || !yDown) {
+    return
+  }
+
+  let xUp = ev.touches[0].clientX
+  let yUp = ev.touches[0].clientY
+
+  let xDiff = xDown - xUp
+  let yDiff = yDown - yUp
+
+  if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
+    if (xDiff > 0) {
+      /* right swipe */
+      handlerOuterAbs({ type: 'swipe' })
+    } else {
+      /* left swipe */
+      handlerOuterAbs({ type: 'swipe' })
+    }
+  } else {
+    if (yDiff > 0) {
+      /* down swipe */
+      handlerOuterAbs({ type: 'swipe' })
+    } else {
+      /* up swipe */
+      handlerOuterAbs({ type: 'swipe' })
+    }
+  }
+  /* reset values */
+  xDown = null
+  yDown = null
+}
+
 export default {
   bind (el, binding) {
     const index = outers.findIndex((o) => o.el === el)
@@ -81,22 +127,20 @@ export default {
     const events = []
     for (const name in bindingEvents) {
       if (binding[name]) {
-        events.push(...(bindingEvents[name] || [name]))
+        events.push(name)
       }
     }
+
     if (!events.length) {
-      events.push(...allEvents)
+      events.push(...Object.keys(bindingEvents))
     }
 
     if (!outers.length) {
-      for (const event of allEvents) {
-        addEventListener(event, outerHandler)
+      for (const name in bindingEvents) {
+        for (const type in bindingEvents[name]) {
+          addEventListener(type, bindingEvents[name][type])
+        }
       }
-
-      // hammer = new Hammer(document.documentElement)
-      //
-      // hammer.get('swipe').set({ direction: Hammer.DIRECTION_VERTICAL })
-      // hammer.on('swipe', outerHandler)
     }
 
     outers.push({
@@ -113,12 +157,11 @@ export default {
     }
 
     if (!outers.length) {
-      for (const event of allEvents) {
-        removeEventListener(event, outerHandler)
+      for (const name in bindingEvents) {
+        for (const type in bindingEvents[name]) {
+          removeEventListener(type, bindingEvents[name][type])
+        }
       }
-
-      // hammer.destroy()
-      // hammer = null
     }
   },
 }

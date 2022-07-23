@@ -2,7 +2,7 @@ import mergeWith from 'lodash/mergeWith'
 import defaults from 'lodash/defaults'
 
 import './fixed-bar.scss'
-import clientHeight from '../utils/clientHeight'
+import '../utils/viewportDeltaY'
 
 let wrapper
 

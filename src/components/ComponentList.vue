@@ -23,7 +23,6 @@ import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
-import clientHeight from '../utils/clientHeight'
 import completeScroll from '../utils/completeScroll'
 
 document.documentElement.style.scrollBehavior = 'auto'
@@ -52,7 +51,7 @@ export default {
     this.key = null
     this.offset = 0
     this.layoutTimer = 0
-    this.scrollBottom = doc.offsetHeight - doc.clientHeight - scrollY
+    this.scrollBottom = doc.offsetHeight - visualViewport.height - scrollY
 
     return {
       listData: this.list,
@@ -111,7 +110,13 @@ export default {
           const b2 = this.$el.getBoundingClientRect()
 
           const top = b2.top - b1.top
-          const bottom = document.documentElement.clientHeight - b1.bottom + b2.bottom
+          const bottom = visualViewport.height - b1.bottom + b2.bottom
+
+          console.log('xxx', {
+            viewportHeight: visualViewport.height,
+            clientHeight: document.documentElement.clientHeight,
+            innerHeight: innerHeight,
+          })
 
           let align = _align
           if (align === 'detect') {
@@ -139,17 +144,18 @@ export default {
             to = offset + scrollY + b0.bottom - bottom
           }
 
-          console.log('positionSmooth', {
-            position,
-            align,
-            top,
-            bottom,
-            offset,
-            to,
-            b0,
-            b1,
-            b2
-          })
+          // console.log('positionSmooth', {
+          //   position,
+          //   _align,
+          //   align,
+          //   top,
+          //   bottom,
+          //   offset,
+          //   to,
+          //   b0,
+          //   b1,
+          //   b2
+          // })
 
           this.$nextTick(() => scrollTo({
             top: to,
@@ -177,17 +183,25 @@ export default {
 
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
-          console.log('restore', this.scrollBottom,
-              scrollY, '->', document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
 
-          scrollTo(scrollX, document.documentElement.offsetHeight - clientHeight() - this.scrollBottom)
+          console.log('bottom', ev?.type, this.scrollBottom,
+              scrollY, '->', {
+                type: ev?.type,
+              }, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
+
+          scrollTo(scrollX, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
           return
         } else if (this.key) {
           for (const child of this.$el.children) {
             if (child.__vue__.$vnode.key === this.key) {
               const { top } = child.getBoundingClientRect()
               if (this.offset !== top) {
-                console.log('restore', child.__vue__.item?.text?.substr(0, 6), top - this.offset, ev?.type,
+
+                console.log('restore', {
+                      text: child.__vue__.item?.text?.substr(0, 6),
+                      offset: top - this.offset,
+                      type: ev?.type,
+                    },
                     scrollY, '->', scrollY - this.offset + top)
 
                 scrollTo(scrollX, scrollY - this.offset + top)
@@ -203,7 +217,7 @@ export default {
       let position = 0
       let count = 0
 
-      const _clientHeight = clientHeight()
+      const viewportHeight = visualViewport.height
 
       for (const el of this.$el.children) {
         const rect = el.getBoundingClientRect()
@@ -213,7 +227,7 @@ export default {
           continue
         }
 
-        if (rect.top > _clientHeight) {
+        if (rect.top > viewportHeight) {
           break
         }
 
@@ -224,7 +238,8 @@ export default {
         position = -1
       }
 
-      this.scrollBottom = document.documentElement.offsetHeight - _clientHeight - scrollY
+      const scrollBottom = document.documentElement.offsetHeight - viewportHeight - scrollY
+      this.scrollBottom = Math.max(0, scrollBottom)
 
       let child
 
@@ -239,7 +254,14 @@ export default {
           this.key = child.__vue__.$vnode.key
           this.offset = child.getBoundingClientRect().top
 
-          // console.log('save', child.__vue__.item?.text?.substr(0, 6), this.offset, ev?.type)
+          // console.log('save', {
+          //   text: child.__vue__.item?.text?.substr(0, 6),
+          //   offset: this.offset,
+          //   type: ev?.type,
+          //   scrollBottom,
+          //   position,
+          //   count,
+          // })
 
           break
         }
@@ -274,9 +296,8 @@ export default {
         return
       }
 
-      if (this.$slots[type][0].componentOptions)
-          // console.log(item, this.$slots[item.type][0].componentOptions.Ctor.options)
-      {
+      if (this.$slots[type][0].componentOptions) {
+        // console.log(item, this.$slots[item.type][0].componentOptions.Ctor.options)
         return this.$slots[type][0].componentOptions.Ctor.options
       }
 
