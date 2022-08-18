@@ -2,7 +2,12 @@ import mergeWith from 'lodash/mergeWith'
 import defaults from 'lodash/defaults'
 
 import './fixed-bar.scss'
-import '../utils/viewportDeltaY'
+
+import isIOS from '../utils/isIOS'
+
+if (isIOS) {
+  require('../utils/viewportOffsetY')
+}
 
 let wrapper
 
@@ -46,7 +51,7 @@ function beforeCreate () {
       placeholder = document.createElement('div')
 
       dock = document.createElement('div')
-      dock.className = this.bottom ? 'fixed-bar-bottom'  : 'fixed-bar-top'
+      dock.className = this.bottom ? 'fixed-bar-bottom' : 'fixed-bar-top'
       wrapper.append(dock)
 
       el = this.$el
@@ -57,7 +62,9 @@ function beforeCreate () {
         shortEl = el.children[0]
         if (shortEl) {
           addEventListener('scroll', onScroll)
-          if(!this.bottom) window.$fixedTop = fixedTop
+          if (!this.bottom) {
+            window.$fixedTop = fixedTop
+          }
         }
       }
 
@@ -70,8 +77,9 @@ function beforeCreate () {
     },
 
     beforeDestroy () {
-      if(window.$fixedTop === fixedTop)
+      if (window.$fixedTop === fixedTop) {
         delete window.$fixedTop
+      }
 
       placeholder.remove()
       dock.remove()
