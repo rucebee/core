@@ -19,6 +19,8 @@ if (visualViewport) {
       doc.style.setProperty('--vp-offset-bottom', offsetBottom + 'px')
     }
 
+    doc.classList[offsetTop + offsetBottom > 0 ? 'add' : 'remove']('has-vp-offset')
+
     // console.log('vpDeltaY', {
     //   scrollY,
     //   offsetTop,
