@@ -61,8 +61,8 @@ function checkDay () {
   if (this.day === null)
     this.$emit('input', null)
   else {
-    const date = new Date(this.year, this.month, this.day)
-    // console.log(date, this.toDate)
+    const date = new Date(Date.UTC(this.year, this.month, this.day))
+    //console.log(date.toISOString(), this.toDate.toISOString())
     this.$emit('input', this.toDate && date > this.toDate ? null : date)
   }
 }
