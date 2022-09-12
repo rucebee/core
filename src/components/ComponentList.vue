@@ -157,6 +157,16 @@ export default {
       }
     },
 
+    layoutLater() {
+      this.layoutTimer = setTimeout(() => {
+        this.layoutTimer = 0
+
+        if (!this._isDestroyed) {
+          this.onLayout({})
+        }
+      }, 500)
+    },
+
     onLayout (ev) {
       if (this.layoutTimer) {
         clearTimeout(this.layoutTimer)
@@ -165,13 +175,7 @@ export default {
 
       if (!ev || ev.type === 'resize') {
         if (completeScroll(true)) {
-          this.layoutTimer = setTimeout(() => {
-            this.layoutTimer = 0
-
-            if (!this._isDestroyed) {
-              this.onLayout({})
-            }
-          }, 500)
+          this.layoutLater()
 
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
@@ -182,6 +186,9 @@ export default {
           // })
 
           scrollTo(scrollX, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
+
+          this.layoutLater()
+
           return
         } else if (this.key) {
           for (const child of this.$el.children) {
@@ -196,6 +203,9 @@ export default {
                 // })
 
                 scrollTo(scrollX, scrollY - this.offset + top)
+
+                this.layoutLater()
+
                 return
               }
 
@@ -699,7 +709,7 @@ export class HistorySource extends DataSource {
   }
 
   layout (position, count) {
-    // console.log('layout', {position, count, firstIndex, list, autoHistory, autoNext})
+    // console.log('layout', {position, count, firstIndex: this.firstIndex, list: this.list, autoHistory: this.autoHistory, autoNext: this.autoNext})
 
     if (this.firstIndex && this.list.length > this.firstIndex) {
       if (this.autoHistory && position <= this.minHistory) {

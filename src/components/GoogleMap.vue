@@ -12,7 +12,7 @@ export default {
     let regionLang = ''
     if(this.locale) {
       const arr = this.locale.split('-')
-      regionLang = `&region=${arr[0]}&language==${arr[1]}`
+      regionLang = `&region=${arr[1]}&language=${arr[0]}`
     }
 
     loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' + this.gkey + regionLang, null, 'app-gmap').then(() => {
