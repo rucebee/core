@@ -20,9 +20,9 @@ function promiseResolve (token) {
   }
 }
 
-function promiseReject (reason = { name: 'userCancel' }) {
+function promiseReject (reason = { name: 'UserCancel' }) {
   if (promised) {
-    promised.reject({ name: 'userCancel' })
+    promised.reject(reason)
     promiseRelease()
   }
 }

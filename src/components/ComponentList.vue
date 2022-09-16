@@ -174,7 +174,7 @@ export default {
       }
 
       if (!ev || ev.type === 'resize') {
-        if (completeScroll(true)) {
+        if (completeScroll(0)) {
           this.layoutLater()
 
           return

@@ -5,23 +5,25 @@ if(typeof window !== 'undefined')
     scrollTime = Date.now()
   })
 
-export default function (touch) {
-  if(touch === false) {
+const DELAY = 500
+
+export default function (delay = DELAY) {
+  if(delay < 0) {
     scrollTime = Date.now()
     return
   }
 
-  if (scrollTime + 500 > Date.now()) {
-    return touch === false ? true : new Promise(resolve => {
+  if (scrollTime + (delay || DELAY) > Date.now()) {
+    return delay === 0 ? true : new Promise(resolve => {
       const fn = () => {
-        if (scrollTime + 500 > Date.now()) {
-          setTimeout(fn, 500)
+        if (scrollTime + delay > Date.now()) {
+          setTimeout(fn, delay)
         } else {
           resolve()
         }
       }
 
-      setTimeout(fn, 500)
+      setTimeout(fn, delay)
     })
   }
 }
