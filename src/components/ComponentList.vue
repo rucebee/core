@@ -23,10 +23,13 @@ import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
-import completeScroll from '../utils/completeScroll'
+import { scrollComplete, scrollHeight, scrollTop, scrollTo } from '../utils/scroll'
 
-document.documentElement.style.scrollBehavior = 'auto'
-export const oneRem = parseFloat(getComputedStyle(document.documentElement).fontSize)
+const isClient = typeof document !== 'undefined'
+if (isClient) {
+  document.documentElement.style.scrollBehavior = 'auto'
+}
+export const oneRem = isClient ? parseFloat(getComputedStyle(document.documentElement).fontSize) : 16
 
 export default {
   directives: {
@@ -44,14 +47,12 @@ export default {
   },
 
   data () {
-    const doc = document.documentElement
-
     this.position = -1
     this.count = 0
     this.key = null
     this.offset = 0
     this.layoutTimer = 0
-    this.scrollBottom = doc.offsetHeight - visualViewport.height - scrollY
+    this.scrollBottom = scrollHeight() - visualViewport.height - scrollTop()
 
     return {
       listData: this.list,
@@ -106,11 +107,10 @@ export default {
             return
           }
 
-          const b1 = document.body.getBoundingClientRect()
           const b2 = this.$el.getBoundingClientRect()
 
-          const top = b2.top - b1.top
-          const bottom = visualViewport.height - b1.bottom + b2.bottom
+          const top = b2.top + scrollTop()
+          const bottom = visualViewport.height + scrollTop() - scrollHeight() + b2.bottom
 
           let align = _align
           if (!align) {
@@ -123,7 +123,7 @@ export default {
 
           let to = 0
           if (align === 'top') {
-            to = scrollY + b0.top - top - offset
+            to = scrollTop() + b0.top - top - offset
 
             const fixedTop = window.$fixedTop?.()
             if (fixedTop && to > fixedTop) {
@@ -133,21 +133,20 @@ export default {
               to += fixedTop
             }
           } else {
-            to = offset + scrollY + b0.bottom - bottom
+            to = offset + scrollTop() + b0.bottom - bottom
           }
 
-          // console.log('positionSmooth', {
-          //   position,
-          //   _align,
-          //   align,
-          //   top,
-          //   bottom,
-          //   offset,
-          //   to,
-          //   b0,
-          //   b1,
-          //   b2
-          // })
+          console.log('positionSmooth', {
+            position,
+            _align,
+            align,
+            top,
+            bottom,
+            offset,
+            to,
+            b0,
+            b2
+          })
 
           this.$nextTick(() => scrollTo({
             top: to,
@@ -157,7 +156,7 @@ export default {
       }
     },
 
-    layoutLater() {
+    layoutLater () {
       this.layoutTimer = setTimeout(() => {
         this.layoutTimer = 0
 
@@ -174,18 +173,22 @@ export default {
       }
 
       if (!ev || ev.type === 'resize') {
-        if (completeScroll(0)) {
+        console.log('onLayout', ev)
+
+        if (scrollComplete(0)) {
           this.layoutLater()
 
+          console.log('onLayout', 0)
+
           return
-        } else if (this.bottom && this.scrollBottom < oneRem) {
+        }  else if (this.bottom && this.scrollBottom < oneRem) {
 
-          // console.log('bottom', scrollY, '->', document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom, {
-          //   type: ev?.type,
-          //   scrollBottom: this.scrollBottom,
-          // })
+          console.log('bottom', scrollTop(), '->', scrollHeight() - visualViewport.height - this.scrollBottom, {
+            type: ev?.type,
+            scrollBottom: this.scrollBottom,
+          })
 
-          scrollTo(scrollX, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
+          scrollTo({ top: scrollHeight() - visualViewport.height - this.scrollBottom })
 
           this.layoutLater()
 
@@ -196,13 +199,13 @@ export default {
               const { top } = child.getBoundingClientRect()
               if (this.offset !== top) {
 
-                // console.log('restore', scrollY, '->', scrollY - this.offset + top, {
-                //   text: child.__vue__.item?.text?.substr(0, 6),
-                //   offset: top - this.offset,
-                //   type: ev?.type,
-                // })
+                console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
+                  text: child.__vue__.item?.text?.substr(0, 6),
+                  offset: top - this.offset,
+                  type: ev?.type,
+                })
 
-                scrollTo(scrollX, scrollY - this.offset + top)
+                scrollTo({ top: scrollTop() - this.offset + top})
 
                 this.layoutLater()
 
@@ -239,7 +242,7 @@ export default {
         position = -1
       }
 
-      const scrollBottom = document.documentElement.offsetHeight - viewportHeight - scrollY
+      const scrollBottom = scrollHeight() - viewportHeight - scrollTop()
       this.scrollBottom = Math.max(0, scrollBottom)
 
       let child
@@ -255,14 +258,14 @@ export default {
           this.key = child.__vue__.$vnode.key
           this.offset = child.getBoundingClientRect().top
 
-          // console.log('save', {
-          //   text: child.__vue__.item?.text?.substr(0, 6),
-          //   offset: this.offset,
-          //   type: ev?.type,
-          //   scrollBottom,
-          //   position,
-          //   count,
-          // })
+          console.log('save', {
+            text: child.__vue__.item?.text?.substr(0, 6),
+            offset: this.offset,
+            type: ev?.type,
+            scrollBottom,
+            position,
+            count,
+          })
 
           break
         }
@@ -517,7 +520,7 @@ export class WaterfallSource extends DataSource {
 
       const _list = await query.call(this, item, limit)
 
-      await completeScroll()
+      await scrollComplete()
 
       if (item?.id !== (list.length > 1 ? list[list.length - 2]?.id : undefined)) {
         return
@@ -605,7 +608,7 @@ export class HistorySource extends DataSource {
     this.refresh = new PeriodicRefresh(async () => {
       const _list = await queryNext.call(this, list, limit)
 
-      await completeScroll()
+      await scrollComplete()
 
       // console.log('refresh', {list, _list})
 
@@ -655,7 +658,7 @@ export class HistorySource extends DataSource {
       const item = list[this.firstIndex]
       const _list = await queryHistory.call(this, list, limit)
 
-      await completeScroll()
+      await scrollComplete()
 
       if (!_list ||
           !this.firstIndex ||
