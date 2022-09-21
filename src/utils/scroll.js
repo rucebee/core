@@ -44,9 +44,11 @@ export default function scrollInit (selector) {
 
         Object.assign(wnd.style, {
           position: 'fixed',
-          top: 'var(--vp-offset-top, 0)',
+          // top: 'var(--vp-offset-top, 0)',
+          // bottom: 'var(--vp-offset-bottom, 0)',
+          top: '0',
+          bottom: '0',
           width: '100%',
-          height: '100%',
           overflow: 'auto',
         })
       } else {
@@ -92,5 +94,19 @@ export function scrollTop () {
 export function scrollTo (options) {
   scrollTime = Date.now()
 
-  return wnd.scrollTo(options)
+  console.log('scrollTo', options)
+
+  wnd !== document.documentElement
+    ? wnd.scrollTo(options)
+    : window.scrollTo(options)
+}
+
+let ignoreTime = 0
+
+export function scrollIgnore (delay) {
+  if (!delay) {
+    return ignoreTime > Date.now()
+  }
+
+  ignoreTime = Date.now() + delay
 }

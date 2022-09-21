@@ -1,12 +1,20 @@
 export default {
   bind (el, binding) {
-    for (const type of binding.value[0].split(' '))
-      addEventListener(type, binding.value[1])
+    for (const type of binding.value[0].split(' ')) {
+      const t = type.split('.')
+      t.length > 1
+        ? window[t[0]].addEventListener(t[1], binding.value[1])
+        : addEventListener(type, binding.value[1])
+    }
   },
 
   unbind (el, binding) {
-    for (const type of binding.value[0].split(' '))
-      removeEventListener(type, binding.value[1])
+    for (const type of binding.value[0].split(' ')) {
+      const t = type.split('.')
+      t.length > 1
+        ? window[t[0]].removeEventListener(t[1], binding.value[1])
+        : removeEventListener(type, binding.value[1])
+    }
   },
 }
 

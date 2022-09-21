@@ -68,6 +68,7 @@ function beforeCreate () {
         }
       }
 
+      addEventListener('viewport1', onResize)
       addEventListener('resize', onResize)
       onResize()
     },
@@ -84,6 +85,7 @@ function beforeCreate () {
       placeholder.remove()
       dock.remove()
 
+      removeEventListener('viewport1', onResize)
       removeEventListener('resize', onResize)
       removeEventListener('scroll', onScroll)
     },

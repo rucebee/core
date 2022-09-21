@@ -1,5 +1,5 @@
 <template>
-  <div v-layout="['resize scroll', onLayout]" class="component-list">
+  <div v-layout="['resize viewport scroll', onLayout]" class="component-list">
     <component
         v-for="(item, index) in listData"
         :is="itemRenderer(item)"
@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import timeout from '../utils/timeout'
 import windowEventDirective from '../directives/windowEvent'
-import { scrollComplete, scrollHeight, scrollTop, scrollTo } from '../utils/scroll'
+import { scrollComplete, scrollHeight, scrollTop, scrollTo, scrollIgnore } from '../utils/scroll'
 
 const isClient = typeof document !== 'undefined'
 if (isClient) {
@@ -172,23 +172,23 @@ export default {
         this.layoutTimer = 0
       }
 
-      if (!ev || ev.type === 'resize') {
-        console.log('onLayout', ev)
+      const viewportHeight = visualViewport.height
 
+      console.log('onLayout', ev, this.bottom, this.scrollBottom)
+
+      if (!ev || ev.type === 'resize' || ev.type === 'viewport') {
         if (scrollComplete(0)) {
           this.layoutLater()
-
-          console.log('onLayout', 0)
 
           return
         }  else if (this.bottom && this.scrollBottom < oneRem) {
 
-          console.log('bottom', scrollTop(), '->', scrollHeight() - visualViewport.height - this.scrollBottom, {
+          console.log('bottom', scrollTop(), '->', scrollHeight() - viewportHeight - this.scrollBottom, {
             type: ev?.type,
             scrollBottom: this.scrollBottom,
           })
 
-          scrollTo({ top: scrollHeight() - visualViewport.height - this.scrollBottom })
+          scrollTo({ top: scrollHeight() - viewportHeight - this.scrollBottom })
 
           this.layoutLater()
 
@@ -216,12 +216,14 @@ export default {
             }
           }
         }
+      } else if(ev.type === 'scroll' && scrollIgnore()) {
+        this.layoutLater()
+
+        return
       }
 
       let position = 0
       let count = 0
-
-      const viewportHeight = visualViewport.height
 
       for (const el of this.$el.children) {
         const rect = el.getBoundingClientRect()
