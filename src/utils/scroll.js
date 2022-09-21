@@ -3,10 +3,12 @@ const DELAY = 500
 let scrollTime = 0
 let wnd
 
+const updateDocumentScrollTime = () => {
+  scrollTime = Date.now()
+}
+
 const updateScrollTime = () => {
-  if (wnd !== document.documentElement) {
-    dispatchEvent(new Event('scroll'))
-  }
+  dispatchEvent(new Event('scroll'))
 
   scrollTime = Date.now()
 }
@@ -15,13 +17,41 @@ export default function scrollInit (selector) {
   const _wnd = selector && document.querySelector(selector) || document.documentElement
   if (wnd !== _wnd) {
     if (wnd) {
-      wnd.removeEventListener('scroll', updateScrollTime)
+      if (wnd !== document.documentElement) {
+        wnd.removeEventListener('scroll', updateScrollTime)
+
+        document.body.style.overflow = ''
+
+        Object.assign(wnd.style, {
+          position: '',
+          top: '',
+          width: '',
+          height: '',
+          overflow: '',
+        })
+      } else {
+        wnd.removeEventListener('scroll', updateDocumentScrollTime)
+      }
     }
 
     wnd = _wnd
 
     if (wnd) {
-      wnd.addEventListener('scroll', updateScrollTime)
+      if (wnd !== document.documentElement) {
+        wnd.addEventListener('scroll', updateScrollTime)
+
+        document.body.style.overflow = 'hidden'
+
+        Object.assign(wnd.style, {
+          position: 'fixed',
+          top: 'var(--vp-offset-top, 0)',
+          width: '100%',
+          height: '100%',
+          overflow: 'auto',
+        })
+      } else {
+        wnd.addEventListener('scroll', updateDocumentScrollTime)
+      }
     }
   }
 }
