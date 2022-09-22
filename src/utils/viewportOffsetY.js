@@ -1,5 +1,3 @@
-import { scrollIgnore } from './scroll'
-
 // iOS:
 // document.documentElement.clientHeight and innerHeight doesn't reflect
 // top/bottom toolbar and keyboards
@@ -51,36 +49,30 @@ if (visualViewport) {
   //
   // updateViewportVars()
 
-  let _vpOffsetTop, _vpOffsetBottom
-
   function upd () {
-    const offsetTop = Math.min(doc.clientHeight - visualViewport.height, Math.max(0, visualViewport.offsetTop))
-    const offsetBottom = Math.max(0, innerHeight - visualViewport.height - Math.max(0, visualViewport.offsetTop))
+    //const offsetTop = Math.min(doc.clientHeight - visualViewport.height, Math.max(0, visualViewport.offsetTop))
+    //const offsetTop = Math.min(innerHeight - visualViewport.height, Math.max(0, visualViewport.offsetTop))
+    const offsetTop = Math.max(0, visualViewport.offsetTop) - Math.max(0, Math.round(scrollY) - doc.scrollHeight + innerHeight)
+    const offsetBottom = Math.max(0, innerHeight - visualViewport.height - offsetTop)
 
-    if (_vpOffsetTop !== offsetTop || _vpOffsetBottom !== offsetBottom) {
+    if (vpOffsetTop !== offsetTop || vpOffsetBottom !== offsetBottom) {
       console.log({
         offsetTop,
         offsetBottom,
-        _vpOffsetTop,
-        _vpOffsetBottom
+        vpOffsetTop,
+        vpOffsetBottom
       })
 
-      _vpOffsetTop = offsetTop
-      _vpOffsetBottom = offsetBottom
+      vpOffsetTop = offsetTop
+      vpOffsetBottom = offsetBottom
 
       doc.style.setProperty('--vp-offset-top', offsetTop + 'px')
       doc.style.setProperty('--vp-offset-bottom', offsetBottom + 'px')
       doc.style.setProperty('--vp-height', visualViewport.height + 'px')
 
-      doc.classList[offsetTop + offsetBottom > 0 ? 'add' : 'remove']('has-vp-offset')
+      doc.classList[offsetTop + offsetBottom > 1 ? 'add' : 'remove']('has-vp-offset')
 
-      scrollIgnore(100)
-
-      dispatchEvent(new Event('viewport1'))
-
-      setTimeout(() => {
-        dispatchEvent(new Event('viewport'))
-      }, 100)
+      dispatchEvent(new Event('viewport'))
     }
 
     requestAnimationFrame(upd)

@@ -176,7 +176,7 @@ export default {
 
       console.log('onLayout', ev, this.bottom, this.scrollBottom)
 
-      if (!ev || ev.type === 'resize' || ev.type === 'viewport') {
+      if (!ev || ev.type === 'resize') {
         if (scrollComplete(0)) {
           this.layoutLater()
 
@@ -217,6 +217,11 @@ export default {
           }
         }
       } else if(ev.type === 'scroll' && scrollIgnore()) {
+        this.layoutLater()
+
+        return
+      } else if(ev.type === 'viewport') {
+        scrollIgnore(500)
         this.layoutLater()
 
         return
