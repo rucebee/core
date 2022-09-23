@@ -1,13 +1,21 @@
 const DELAY = 500
 
 let scrollTime = 0
+let ignoreNext = false
 let wnd
 
 const updateDocumentScrollTime = () => {
+  if (ignoreNext) {
+    ignoreNext = false
+  }
   scrollTime = Date.now()
 }
 
 const updateScrollTime = () => {
+  if (ignoreNext) {
+    ignoreNext = false
+  }
+
   dispatchEvent(new Event('scroll'))
 
   scrollTime = Date.now()
@@ -91,14 +99,19 @@ export function scrollTop () {
   return wnd.scrollTop
 }
 
-export function scrollTo (options) {
-  scrollTime = Date.now()
+export function scrollTo (options, ignore) {
+  console.log('scrollTo', options, ignore)
 
-  console.log('scrollTo', options)
+  ignoreNext = !!ignore
+  if (!ignoreNext) {
+    scrollTime = Date.now()
+  }
 
-  wnd !== document.documentElement
-    ? wnd.scrollTo(options)
-    : window.scrollTo(options)
+  if (options) {
+    wnd !== document.documentElement
+      ? wnd.scrollTo(options)
+      : window.scrollTo(options)
+  }
 }
 
 let ignoreTime = 0

@@ -136,17 +136,17 @@ export default {
             to = offset + scrollTop() + b0.bottom - bottom
           }
 
-          console.log('positionSmooth', {
-            position,
-            _align,
-            align,
-            top,
-            bottom,
-            offset,
-            to,
-            b0,
-            b2
-          })
+          // console.log('positionSmooth', {
+          //   position,
+          //   _align,
+          //   align,
+          //   top,
+          //   bottom,
+          //   offset,
+          //   to,
+          //   b0,
+          //   b2
+          // })
 
           this.$nextTick(() => scrollTo({
             top: to,
@@ -156,14 +156,14 @@ export default {
       }
     },
 
-    layoutLater () {
+    layoutLater (ev = {}, delay = 500) {
       this.layoutTimer = setTimeout(() => {
         this.layoutTimer = 0
 
         if (!this._isDestroyed) {
-          this.onLayout({})
+          this.onLayout(ev)
         }
-      }, 500)
+      }, delay)
     },
 
     onLayout (ev) {
@@ -172,23 +172,31 @@ export default {
         this.layoutTimer = 0
       }
 
+      //const viewportHeight = Math.min(visualViewport.height, document.documentElement.offsetHeight)
       const viewportHeight = visualViewport.height
 
-      console.log('onLayout', ev, this.bottom, this.scrollBottom)
+      console.log('onLayout', ev?.type, this.bottom, this.scrollBottom)
 
       if (!ev || ev.type === 'resize') {
         if (scrollComplete(0)) {
           this.layoutLater()
 
-          return
-        }  else if (this.bottom && this.scrollBottom < oneRem) {
+          console.log('skip scroll')
 
-          console.log('bottom', scrollTop(), '->', scrollHeight() - viewportHeight - this.scrollBottom, {
-            type: ev?.type,
-            scrollBottom: this.scrollBottom,
+          return
+        } else if (this.bottom && this.scrollBottom < oneRem) {
+          const extraBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--extra-bottom')) || 0
+          const top = document.documentElement.offsetHeight - extraBottom - visualViewport.height - this.scrollBottom
+          //const top = document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom
+          const top2 = scrollHeight() - visualViewport.height - this.scrollBottom
+
+          console.log('bottom', scrollTop(), '->', top, top2 - top, {
+            viewportHeight,
+            offsetHeight: document.documentElement.offsetHeight,
+            extraBottom,
           })
 
-          scrollTo({ top: scrollHeight() - viewportHeight - this.scrollBottom })
+          scrollTo({ top }, true)
 
           this.layoutLater()
 
@@ -202,10 +210,9 @@ export default {
                 console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
                   text: child.__vue__.item?.text?.substr(0, 6),
                   offset: top - this.offset,
-                  type: ev?.type,
                 })
 
-                scrollTo({ top: scrollTop() - this.offset + top})
+                scrollTo({ top: scrollTop() - this.offset + top }, true)
 
                 this.layoutLater()
 
@@ -216,13 +223,8 @@ export default {
             }
           }
         }
-      } else if(ev.type === 'scroll' && scrollIgnore()) {
-        this.layoutLater()
-
-        return
-      } else if(ev.type === 'viewport') {
-        scrollIgnore(500)
-        this.layoutLater()
+      } else if (ev.type === 'viewport') {
+        this.layoutLater(null, 100)
 
         return
       }
