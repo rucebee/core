@@ -185,15 +185,12 @@ export default {
 
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
-          const extraBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--extra-bottom')) || 0
-          const top = document.documentElement.offsetHeight - extraBottom - visualViewport.height - this.scrollBottom
-          //const top = document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom
+          const top = document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom
           const top2 = scrollHeight() - visualViewport.height - this.scrollBottom
 
           console.log('bottom', scrollTop(), '->', top, top2 - top, {
             viewportHeight,
-            offsetHeight: document.documentElement.offsetHeight,
-            extraBottom,
+            offsetHeight: document.documentElement.offsetHeight
           })
 
           scrollTo({ top }, true)
