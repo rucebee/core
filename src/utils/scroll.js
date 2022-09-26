@@ -123,3 +123,19 @@ export function scrollIgnore (delay) {
 
   ignoreTime = Date.now() + delay
 }
+
+let clickTarget = 0
+
+addEventListener('touchstart', (ev) => {
+  clickTarget = ev.target
+})
+
+addEventListener('mousedown', (ev) => {
+  clickTarget = ev.target
+})
+
+addEventListener('click', (ev) => {
+  if (clickTarget !== ev.target) {
+    ev.stopPropagation()
+  }
+}, true)
