@@ -22,6 +22,10 @@ if (isIOS) {
   }, true)
 
   function onFocus (ev) {
+    if (visualViewport.height < outerHeight) {
+      return
+    }
+
     if (currentEl === ev.target) {
       currentEl = null
       return
