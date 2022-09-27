@@ -6,7 +6,7 @@ inp.style.outline = 'none'
 inp.style.top = '0'
 document.body.append(inp)
 
-let currentEl, visualViewportHeight
+let currentEl, visualViewportHeight, focusTimeout
 
 function onFocus (ev) {
   if (visualViewport.height < outerHeight) {
@@ -38,7 +38,12 @@ function onFocus (ev) {
 
   inp.focus()
 
-  setTimeout(() => {
+  if (focusTimeout) {
+    clearTimeout(focusTimeout)
+  }
+  focusTimeout = setTimeout(() => {
+    focusTimeout = 0
+
     const el = currentEl = ev.target
 
     el.style.position = 'fixed'
@@ -53,7 +58,16 @@ function onFocus (ev) {
     el.focus()
     el.style.position = ''
     el.style.transform = ''
+
+    el.addEventListener('blur', onBlur)
   }, 100)
+}
+
+function onBlur (ev) {
+  if (currentEl === ev.target && inp !== document.activeElement) {
+    currentEl.removeEventListener('blur', onBlur)
+    currentEl = null
+  }
 }
 
 addEventListener('focus', (ev) => {
@@ -68,7 +82,8 @@ addEventListener('focus', (ev) => {
   }
 
   let p = ev.target
-  while ((p = p.parentElement) && getComputedStyle(p).position !== 'fixed') {}
+  while ((p = p.parentElement) && getComputedStyle(p).position !== 'fixed') {
+  }
 
   if (p) {
     onFocus(ev)

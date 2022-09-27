@@ -6,7 +6,7 @@ import './fixed-bar.scss'
 import isIOS from '../utils/isIOS'
 
 if (isIOS) {
-  require('../utils/viewportOffsetY')
+  require('../utils/ios-viewport-offset-fix')
 }
 
 let wrapper
