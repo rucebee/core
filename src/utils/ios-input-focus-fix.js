@@ -6,8 +6,6 @@ inp.style.outline = 'none'
 inp.style.top = '0'
 document.body.append(inp)
 
-inp.addEventListener('blur', onBlur)
-
 let currentEl, visualViewportHeight, focusTimeout, isFocusing
 
 function onFocus (ev) {
@@ -23,7 +21,7 @@ function onFocus (ev) {
   const bottom = document.documentElement.offsetHeight - scrollY - outerHeight
   if (bottom < 0) {
     const h = visualViewportHeight || outerHeight / 2
-    const b = document.documentElement.offsetHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--keyboard-sab')) || 0)
+    const b = document.documentElement.offsetHeight
 
     inp.style.top = `${b - h}px`
     inp.style.bottom = ''
@@ -46,7 +44,7 @@ function onFocus (ev) {
     currentEl = ev.target
     currentEl.addEventListener('blur', onBlur)
     document.documentElement.classList.add('inp-focus')
-    dispatchEvent(new Event('viewport'))
+    dispatchEvent(new Event('resize'))
   }
 
   isFocusing = true
@@ -70,42 +68,28 @@ function onFocus (ev) {
     inp.style.bottom = ''
 
     el.style.transform = `translateY(${b0.top - b1.top}px)`
-    isFocusing = true
     el.focus()
-    isFocusing = false
     el.style.position = ''
     el.style.transform = ''
   }, 100)
 }
 
-function resetCurrentEl () {
-  currentEl.removeEventListener('blur', onBlur)
-  currentEl = null
-
-  if (focusTimeout) {
-    clearTimeout(focusTimeout)
-    focusTimeout = 0
-  }
-
-  document.documentElement.classList.remove('inp-focus')
-  dispatchEvent(new Event('viewport'))
-}
-
 function onBlur (ev) {
-  requestAnimationFrame(() => {
-    if (currentEl === ev.target && currentEl !== document.activeElement && inp !== document.activeElement) {
-      resetCurrentEl()
-    }
-  })
-}
+  if (currentEl === ev.target && currentEl !== document.activeElement && !isFocusing) {
+    currentEl.removeEventListener('blur', onBlur)
+    currentEl = null
 
-addEventListener('blur', (ev) => {
-  console.log('blur', ev.target)
-}, true)
+    if (focusTimeout) {
+      clearTimeout(focusTimeout)
+      focusTimeout = 0
+    }
+
+    document.documentElement.classList.remove('inp-focus')
+    dispatchEvent(new Event('resize'))
+  }
+}
 
 addEventListener('focus', (ev) => {
-  console.log('focus', ev.target)
-
   setTimeout(() => {
     if (visualViewport.height < outerHeight) {
       visualViewportHeight = visualViewport.height
