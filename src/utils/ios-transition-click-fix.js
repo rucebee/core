@@ -25,7 +25,7 @@ addEventListener('click', (ev) => {
     console.log('click-fix',
       touchTarget, touchDist,
       ev.target, clickDist,
-      ev.target !== touchTarget && (touchDist >= 1 || clickDist <= -1)
+      touchDist >= 1 || clickDist <= -1
     )
 
     if (touchDist >= 1 || clickDist <= -1) {

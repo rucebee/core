@@ -6,7 +6,9 @@ inp.style.outline = 'none'
 inp.style.top = '0'
 document.body.append(inp)
 
-let currentEl, visualViewportHeight, focusTimeout
+inp.addEventListener('blur', onBlur)
+
+let currentEl, visualViewportHeight, focusTimeout, isFocusing
 
 function onFocus (ev) {
   if (visualViewport.height < outerHeight) {
@@ -36,7 +38,20 @@ function onFocus (ev) {
     inp.style.height = '100vh'
   }
 
+  if (currentEl !== ev.target) {
+    if (currentEl) {
+      currentEl.removeEventListener('blur', onBlur)
+    }
+
+    currentEl = ev.target
+    currentEl.addEventListener('blur', onBlur)
+    document.documentElement.classList.add('inp-focus')
+    dispatchEvent(new Event('viewport'))
+  }
+
+  isFocusing = true
   inp.focus()
+  isFocusing = false
 
   if (focusTimeout) {
     clearTimeout(focusTimeout)
@@ -44,7 +59,7 @@ function onFocus (ev) {
   focusTimeout = setTimeout(() => {
     focusTimeout = 0
 
-    const el = currentEl = ev.target
+    const el = ev.target
 
     el.style.position = 'fixed'
     const b0 = inp.getBoundingClientRect()
@@ -55,22 +70,42 @@ function onFocus (ev) {
     inp.style.bottom = ''
 
     el.style.transform = `translateY(${b0.top - b1.top}px)`
+    isFocusing = true
     el.focus()
+    isFocusing = false
     el.style.position = ''
     el.style.transform = ''
-
-    el.addEventListener('blur', onBlur)
   }, 100)
 }
 
-function onBlur (ev) {
-  if (currentEl === ev.target && inp !== document.activeElement) {
-    currentEl.removeEventListener('blur', onBlur)
-    currentEl = null
+function resetCurrentEl () {
+  currentEl.removeEventListener('blur', onBlur)
+  currentEl = null
+
+  if (focusTimeout) {
+    clearTimeout(focusTimeout)
+    focusTimeout = 0
   }
+
+  document.documentElement.classList.remove('inp-focus')
+  dispatchEvent(new Event('viewport'))
 }
 
+function onBlur (ev) {
+  requestAnimationFrame(() => {
+    if (currentEl === ev.target && currentEl !== document.activeElement && inp !== document.activeElement) {
+      resetCurrentEl()
+    }
+  })
+}
+
+addEventListener('blur', (ev) => {
+  console.log('blur', ev.target)
+}, true)
+
 addEventListener('focus', (ev) => {
+  console.log('focus', ev.target)
+
   setTimeout(() => {
     if (visualViewport.height < outerHeight) {
       visualViewportHeight = visualViewport.height
