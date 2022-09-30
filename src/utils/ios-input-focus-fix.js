@@ -14,11 +14,19 @@ function onFocus (ev) {
   }
 
   if (currentEl === ev.target) {
-    currentEl = null
     return
+  } else {
+    if (currentEl) {
+      currentEl.removeEventListener('blur', onBlur)
+    }
+
+    currentEl = ev.target
+    currentEl.addEventListener('blur', onBlur)
+    document.documentElement.classList.add('inp-focus')
+    dispatchEvent(new Event('resize'))
   }
 
-  const bottom = document.documentElement.offsetHeight - scrollY - outerHeight
+  const bottom = document.documentElement.offsetHeight - Math.max(0, scrollY) - outerHeight
   if (bottom < 0) {
     const h = visualViewportHeight || outerHeight / 2
     const b = document.documentElement.offsetHeight
@@ -34,17 +42,6 @@ function onFocus (ev) {
     inp.style.top = scrollY + 'px'
     inp.style.bottom = ''
     inp.style.height = '100vh'
-  }
-
-  if (currentEl !== ev.target) {
-    if (currentEl) {
-      currentEl.removeEventListener('blur', onBlur)
-    }
-
-    currentEl = ev.target
-    currentEl.addEventListener('blur', onBlur)
-    document.documentElement.classList.add('inp-focus')
-    dispatchEvent(new Event('resize'))
   }
 
   isFocusing = true

@@ -186,7 +186,7 @@ export default {
           return
         } else if (this.bottom && this.scrollBottom < oneRem) {
           //const top = scrollHeight() - visualViewport.height - this.scrollBottom
-          const top = document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom
+          const top = Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
 
           console.log('bottom', scrollTop(), '->', top, {
             viewportHeight,
