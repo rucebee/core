@@ -29,24 +29,25 @@ function onFocus (ev) {
     dispatchEvent(new Event('resize'))
   }
 
-  const bottom = document.documentElement.offsetHeight - Math.max(0, scrollY) - outerHeight
-
   if (Math.abs(document.documentElement.offsetHeight - outerHeight) < 1) {
     inpStyle.top = `${(outerHeight - freeHeight) / 2}px`
     inpStyle.bottom = ''
     inpStyle.height = `${freeHeight}px`
-  } else if (bottom < 0) {
-    inpStyle.top = `${document.documentElement.offsetHeight - freeHeight}px`
-    inpStyle.bottom = ''
-    inpStyle.height = `${freeHeight}px`
-  } else if (bottom < 16) {
-    inpStyle.top = ''
-    inpStyle.bottom = bottom + 'px'
-    inpStyle.height = `10px`
   } else {
-    inpStyle.top = scrollY + 'px'
-    inpStyle.bottom = ''
-    inpStyle.height = '100vh'
+    const bottom = document.documentElement.offsetHeight - Math.max(0, scrollY) - outerHeight
+    if (bottom < 0) {
+      inpStyle.top = `${document.documentElement.offsetHeight - freeHeight}px`
+      inpStyle.bottom = ''
+      inpStyle.height = `${freeHeight}px`
+    } else if (bottom < 16) {
+      inpStyle.top = ''
+      inpStyle.bottom = bottom + 'px'
+      inpStyle.height = `10px`
+    } else {
+      inpStyle.top = scrollY + 'px'
+      inpStyle.bottom = ''
+      inpStyle.height = '100vh'
+    }
   }
 
   isFocusing = true
