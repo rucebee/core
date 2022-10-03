@@ -1,12 +1,15 @@
 const inp = document.createElement('input')
-inp.style.position = 'absolute'
-inp.style.right = '100%'
-inp.style.height = '10px'
-inp.style.outline = 'none'
-inp.style.top = '0'
+const inpStyle = inp.style
+
+inpStyle.position = 'absolute'
+inpStyle.right = '100%'
+inpStyle.height = '10px'
+inpStyle.outline = 'none'
+inpStyle.top = '0'
 document.body.append(inp)
 
-let currentEl, visualViewportHeight, focusTimeout, isFocusing
+let currentEl, focusTimeout, isFocusing
+let freeHeight = +localStorage.getItem('free-height-' + outerWidth) || outerHeight / 2
 
 function onFocus (ev) {
   if (visualViewport.height < outerHeight) {
@@ -27,21 +30,23 @@ function onFocus (ev) {
   }
 
   const bottom = document.documentElement.offsetHeight - Math.max(0, scrollY) - outerHeight
-  if (bottom < 0) {
-    const h = visualViewportHeight || outerHeight / 2
-    const b = document.documentElement.offsetHeight
 
-    inp.style.top = `${b - h}px`
-    inp.style.bottom = ''
-    inp.style.height = `${h}px`
+  if (document.documentElement.offsetHeight === outerHeight) {
+    inpStyle.top = `${(outerHeight - freeHeight) / 2}px`
+    inpStyle.bottom = ''
+    inpStyle.height = `${freeHeight}px`
+  } else if (bottom < 0) {
+    inpStyle.top = `${document.documentElement.offsetHeight - freeHeight}px`
+    inpStyle.bottom = ''
+    inpStyle.height = `${freeHeight}px`
   } else if (bottom < 16) {
-    inp.style.top = ''
-    inp.style.bottom = bottom + 'px'
-    inp.style.height = `10px`
+    inpStyle.top = ''
+    inpStyle.bottom = bottom + 'px'
+    inpStyle.height = `10px`
   } else {
-    inp.style.top = scrollY + 'px'
-    inp.style.bottom = ''
-    inp.style.height = '100vh'
+    inpStyle.top = scrollY + 'px'
+    inpStyle.bottom = ''
+    inpStyle.height = '100vh'
   }
 
   isFocusing = true
@@ -60,9 +65,9 @@ function onFocus (ev) {
     const b0 = inp.getBoundingClientRect()
     const b1 = el.getBoundingClientRect()
 
-    inp.style.top = '0'
-    inp.style.height = '0'
-    inp.style.bottom = ''
+    inpStyle.top = '0'
+    inpStyle.height = '0'
+    inpStyle.bottom = ''
 
     el.style.transform = `translateY(${b0.top - b1.top}px)`
     el.focus()
@@ -86,10 +91,15 @@ function onBlur (ev) {
   }
 }
 
+addEventListener('resize', (ev) => {
+  freeHeight = +localStorage.getItem('free-height-' + outerWidth) || outerHeight / 2
+}, false)
+
 addEventListener('focus', (ev) => {
   setTimeout(() => {
     if (visualViewport.height < outerHeight) {
-      visualViewportHeight = visualViewport.height
+      freeHeight = visualViewport.height
+      localStorage.setItem('free-height-' + outerWidth, freeHeight)
     }
   }, 100)
 
