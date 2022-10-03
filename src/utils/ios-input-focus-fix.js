@@ -31,7 +31,7 @@ function onFocus (ev) {
 
   const bottom = document.documentElement.offsetHeight - Math.max(0, scrollY) - outerHeight
 
-  if (document.documentElement.offsetHeight === outerHeight) {
+  if (Math.abs(document.documentElement.offsetHeight - outerHeight) < 1) {
     inpStyle.top = `${(outerHeight - freeHeight) / 2}px`
     inpStyle.bottom = ''
     inpStyle.height = `${freeHeight}px`
