@@ -39,7 +39,7 @@ export default {
   props: {
     list: Array,
     source: Object,
-    bottom: Boolean,
+    stickTo: String,
     anchor: {
       type: Function,
       default: item => item && item.type !== 'loading',
@@ -175,7 +175,7 @@ export default {
       //const viewportHeight = Math.min(visualViewport.height, document.documentElement.offsetHeight)
       const viewportHeight = visualViewport.height
 
-      console.log('onLayout', ev?.type, this.bottom, this.scrollBottom)
+      console.log('onLayout', ev?.type, this.stickTo, this.scrollBottom)
 
       if (!ev || ev.type === 'resize') {
         if (scrollComplete(0)) {
@@ -184,7 +184,7 @@ export default {
           console.log('skip scroll')
 
           return
-        } else if (this.bottom && this.scrollBottom < oneRem) {
+        } else if (this.stickTo === 'bottom' && this.scrollBottom < oneRem) {
           //const top = scrollHeight() - visualViewport.height - this.scrollBottom
           const top = Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
 
@@ -198,7 +198,7 @@ export default {
           this.layoutLater()
 
           return
-        } else if (this.key) {
+        } else if (this.stickTo && this.key) {
           for (const child of this.$el.children) {
             if (child.__vue__.$vnode.key === this.key) {
               const { top } = child.getBoundingClientRect()
@@ -244,12 +244,12 @@ export default {
         count++
       }
 
+      const scrollBottom = scrollHeight() - viewportHeight - scrollTop()
+      this.scrollBottom = Math.max(0, scrollBottom)
+
       if (!count) {
         position = -1
       }
-
-      const scrollBottom = scrollHeight() - viewportHeight - scrollTop()
-      this.scrollBottom = Math.max(0, scrollBottom)
 
       let child
 
