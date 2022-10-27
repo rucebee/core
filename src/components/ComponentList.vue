@@ -175,23 +175,23 @@ export default {
       //const viewportHeight = Math.min(visualViewport.height, document.documentElement.offsetHeight)
       const viewportHeight = visualViewport.height
 
-      console.log('onLayout', ev?.type, this.stickTo, this.scrollBottom)
+      //console.log('onLayout', ev?.type, this.stickTo, this.scrollBottom)
 
       if (!ev || ev.type === 'resize') {
         if (scrollComplete(0)) {
           this.layoutLater()
 
-          console.log('skip scroll')
+          //console.log('skip scroll')
 
           return
         } else if (this.stickTo === 'bottom' && this.scrollBottom < oneRem) {
           //const top = scrollHeight() - visualViewport.height - this.scrollBottom
           const top = Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
 
-          console.log('bottom', scrollTop(), '->', top, {
-            viewportHeight,
-            offsetHeight: document.documentElement.offsetHeight
-          })
+          // console.log('bottom', scrollTop(), '->', top, {
+          //   viewportHeight,
+          //   offsetHeight: document.documentElement.offsetHeight
+          // })
 
           scrollTo({ top }, true)
 
@@ -204,10 +204,10 @@ export default {
               const { top } = child.getBoundingClientRect()
               if (this.offset !== top) {
 
-                console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
-                  text: child.__vue__.item?.text?.substr(0, 6),
-                  offset: top - this.offset,
-                })
+                // console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
+                //   text: child.__vue__.item?.text?.substr(0, 6),
+                //   offset: top - this.offset,
+                // })
 
                 scrollTo({ top: scrollTop() - this.offset + top }, true)
 
@@ -264,14 +264,14 @@ export default {
           this.key = child.__vue__.$vnode.key
           this.offset = child.getBoundingClientRect().top
 
-          console.log('save', {
-            text: child.__vue__.item?.text?.substr(0, 6),
-            offset: this.offset,
-            type: ev?.type,
-            scrollBottom,
-            position,
-            count,
-          })
+          // console.log('save', {
+          //   text: child.__vue__.item?.text?.substr(0, 6),
+          //   offset: this.offset,
+          //   type: ev?.type,
+          //   scrollBottom,
+          //   position,
+          //   count,
+          // })
 
           break
         }

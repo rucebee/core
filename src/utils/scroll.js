@@ -100,7 +100,7 @@ export function scrollTop () {
 }
 
 export function scrollTo (options, ignore) {
-  console.log('scrollTo', options, ignore)
+  //console.log('scrollTo', options, ignore)
 
   ignoreNext = !!ignore
   if (!ignoreNext) {
