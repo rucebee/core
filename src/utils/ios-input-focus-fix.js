@@ -11,8 +11,14 @@ document.body.append(inp)
 let currentEl, focusTimeout, isFocusing
 let freeHeight = +localStorage.getItem('free-height-' + outerWidth) || outerHeight / 2
 
+const inputTypes = ['text', 'password', 'number', 'email', 'tel', 'url', 'search', 'date', 'datetime', 'datetime-local', 'time', 'month', 'week']
+
 function onFocus (ev) {
   if (visualViewport.height < outerHeight) {
+    return
+  }
+
+  if ((ev.target.tagName !== 'INPUT' || inputTypes.indexOf(ev.type) < 0) && ev.target.tagName !== 'TEXTAREA') {
     return
   }
 
@@ -28,6 +34,8 @@ function onFocus (ev) {
     document.documentElement.classList.add('inp-focus')
     dispatchEvent(new Event('resize'))
   }
+
+  console.log(ev.target)
 
   if (Math.abs(document.documentElement.offsetHeight - outerHeight) < 1) {
     inpStyle.top = `${(outerHeight - freeHeight) / 2}px`
