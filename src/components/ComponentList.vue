@@ -1,12 +1,12 @@
 <template>
   <div v-layout="['resize viewport scroll', onLayout]" class="component-list">
     <component
-        v-for="(item, index) in listData"
-        :is="itemRenderer(item)"
-        :key="item.id"
-        :item="item"
-        :position="index"
-        :source="source"
+      v-for="(item, index) in listData"
+      :is="itemRenderer(item)"
+      :key="item.id"
+      :item="item"
+      :position="index"
+      :source="source"
     />
   </div>
 </template>
@@ -39,7 +39,7 @@ export default {
   props: {
     list: Array,
     source: Object,
-    stickTo: String,
+    stickTo: [String, Boolean],
     anchor: {
       type: Function,
       default: item => item && item.type !== 'loading',
@@ -52,7 +52,14 @@ export default {
     this.key = null
     this.offset = 0
     this.layoutTimer = 0
-    this.scrollBottom = scrollHeight() - visualViewport.height - scrollTop()
+
+    if (this.stickTo === 'bottom') {
+      this.scrollGap = scrollHeight() - visualViewport.height - scrollTop()
+    } else if (this.stickTo) {
+      this.scrollGap = scrollTop()
+    } else {
+      this.scrollGap = 0
+    }
 
     return {
       listData: this.list,
@@ -175,7 +182,7 @@ export default {
       //const viewportHeight = Math.min(visualViewport.height, document.documentElement.offsetHeight)
       const viewportHeight = visualViewport.height
 
-      //console.log('onLayout', ev?.type, this.stickTo, this.scrollBottom)
+      //console.log('onLayout', ev?.type, this.stickTo, this.scrollGap)
 
       if (!ev || ev.type === 'resize') {
         if (scrollComplete(0)) {
@@ -184,44 +191,47 @@ export default {
           //console.log('skip scroll')
 
           return
-        } else if (this.stickTo === 'bottom' && this.scrollBottom < oneRem) {
-          //const top = scrollHeight() - visualViewport.height - this.scrollBottom
-          const top = Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.scrollBottom)
+        } else if (this.stickTo) {
+          if (this.scrollGap < oneRem) {
+            const top = this.stickTo === 'bottom'
+              ? Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.scrollGap)
+              : 0
 
-          // console.log('bottom', scrollTop(), '->', top, {
-          //   viewportHeight,
-          //   offsetHeight: document.documentElement.offsetHeight
-          // })
+            // console.log('bottom', scrollTop(), '->', top, {
+            //   viewportHeight,
+            //   offsetHeight: document.documentElement.offsetHeight
+            // })
 
-          scrollTo({ top }, true)
+            scrollTo({ top }, true)
 
-          this.layoutLater()
+            this.layoutLater()
 
-          return
-        } else if (this.stickTo && this.key) {
-          for (const child of this.$el.children) {
-            if (child.__vue__.$vnode.key === this.key) {
-              const { top } = child.getBoundingClientRect()
-              if (this.offset !== top) {
+            return
+          } else if (this.key) {
+            for (const child of this.$el.children) {
+              if (child.__vue__.$vnode.key === this.key) {
+                const { top } = child.getBoundingClientRect()
+                if (this.offset !== top) {
 
-                // console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
-                //   text: child.__vue__.item?.text?.substr(0, 6),
-                //   offset: top - this.offset,
-                // })
+                  // console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
+                  //   text: child.__vue__.item?.text?.substr(0, 6),
+                  //   offset: top - this.offset,
+                  // })
 
-                scrollTo({ top: scrollTop() - this.offset + top }, true)
+                  scrollTo({ top: scrollTop() - this.offset + top }, true)
 
-                this.layoutLater()
+                  this.layoutLater()
 
-                return
+                  return
+                }
+
+                break
               }
-
-              break
             }
           }
         }
       } else if (ev.type === 'viewport') {
-        this.layoutLater(null, 100)
+        this.layoutLater(undefined, 100)
 
         return
       }
@@ -244,8 +254,14 @@ export default {
         count++
       }
 
-      const scrollBottom = scrollHeight() - viewportHeight - scrollTop()
-      this.scrollBottom = Math.max(0, scrollBottom)
+      if (this.scrollTo) {
+        const scrollGap = this.scrollTo === 'bottom'
+          ? scrollHeight() - viewportHeight - scrollTop()
+          : scrollTop()
+        this.scrollGap = Math.max(0, scrollGap)
+      } else {
+        this.scrollGap = 0
+      }
 
       if (!count) {
         position = -1
@@ -268,7 +284,7 @@ export default {
           //   text: child.__vue__.item?.text?.substr(0, 6),
           //   offset: this.offset,
           //   type: ev?.type,
-          //   scrollBottom,
+          //   scrollGap,
           //   position,
           //   count,
           // })
@@ -489,14 +505,24 @@ export const LOADING_ITEM = { type: 'loading' }
 export const EMPTY_ITEM = { type: 'empty' }
 
 export class ListSource extends DataSource {
-  constructor (query, period) {
+
+  loadingItem
+
+  constructor (query, period, loadingItem = LOADING_ITEM) {
     super()
     const list = this.list
 
+    this.loadingItem = loadingItem
+
     this.refresh = new PeriodicRefresh(() =>
-        query.call(this).then((_list) => {
-          list.splice(0, list.length, ..._list)
-        }), period)
+      query.call(this).then((_list) => {
+        list.splice(0, list.length, ..._list)
+      }), period)
+  }
+
+  reset() {
+    this.list.splice(0, this.list.length, this.loadingItem)
+    this.refresh.query(true)
   }
 }
 
@@ -667,9 +693,9 @@ export class HistorySource extends DataSource {
       await scrollComplete()
 
       if (!_list ||
-          !this.firstIndex ||
-          list.length <= this.firstIndex ||
-          item.id !== list[this.firstIndex].id) {
+        !this.firstIndex ||
+        list.length <= this.firstIndex ||
+        item.id !== list[this.firstIndex].id) {
         return
       }
 
@@ -758,8 +784,8 @@ export const ProtoView = {
 
     hasPromise (name) {
       return !!(name
-              ? this.item.promise?.[name]
-              : this.item.promise && Object.keys(this.item.promise).length
+          ? this.item.promise?.[name]
+          : this.item.promise && Object.keys(this.item.promise).length
       )
     },
   },
