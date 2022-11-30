@@ -108,57 +108,55 @@ export default {
   methods: {
     positionAligned (position, offset = 0, align, behavior = 'smooth') {
       if (position > -1) {
-        this.$nextTick(() => {
-          const b0 = this.$el.children[position]?.getBoundingClientRect()
-          if (!b0) {
+        const b0 = this.$el.children[position]?.getBoundingClientRect()
+        if (!b0) {
+          return
+        }
+
+        const b2 = this.$el.getBoundingClientRect()
+
+        const top = b2.top + scrollTop()
+        const bottom = visualViewport.height + scrollTop() - scrollHeight() + b2.bottom
+
+        let _align = align
+        if (!_align) {
+          if (b0.top >= top && b0.bottom <= bottom) {
             return
           }
 
-          const b2 = this.$el.getBoundingClientRect()
+          _align = Math.abs(b0.top - top) < Math.abs(b0.bottom - bottom) ? 'top' : 'bottom'
+        }
 
-          const top = b2.top + scrollTop()
-          const bottom = visualViewport.height + scrollTop() - scrollHeight() + b2.bottom
+        let to = 0
+        if (_align === 'top') {
+          to = scrollTop() + b0.top - top - offset
 
-          let _align = align
-          if (!_align) {
-            if (b0.top >= top && b0.bottom <= bottom) {
+          const fixedTop = window.$fixedTop?.()
+          if (fixedTop && to > fixedTop) {
+            if (align === 'detect' && b0.top >= top - fixedTop) {
               return
             }
-
-            _align = Math.abs(b0.top - top) < Math.abs(b0.bottom - bottom) ? 'top' : 'bottom'
+            to += fixedTop
           }
+        } else {
+          to = offset + scrollTop() + b0.bottom - bottom
+        }
 
-          let to = 0
-          if (_align === 'top') {
-            to = scrollTop() + b0.top - top - offset
+        // console.log('positionAligned', {
+        //   position,
+        //   align,
+        //   _align,
+        //   top,
+        //   bottom,
+        //   offset,
+        //   to,
+        //   b0,
+        //   b2
+        // })
 
-            const fixedTop = window.$fixedTop?.()
-            if (fixedTop && to > fixedTop) {
-              if (align === 'detect' && b0.top >= top - fixedTop) {
-                return
-              }
-              to += fixedTop
-            }
-          } else {
-            to = offset + scrollTop() + b0.bottom - bottom
-          }
-
-          // console.log('positionAligned', {
-          //   position,
-          //   align,
-          //   _align,
-          //   top,
-          //   bottom,
-          //   offset,
-          //   to,
-          //   b0,
-          //   b2
-          // })
-
-          scrollTo({
-            top: to,
-            behavior,
-          })
+        scrollTo({
+          top: to,
+          behavior,
         })
       }
     },
