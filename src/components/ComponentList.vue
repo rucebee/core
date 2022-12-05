@@ -253,7 +253,7 @@ export default {
       }
 
       if (this.stickTo) {
-        const stickGap = this.scrollTo === 'bottom'
+        const stickGap = this.stickTo === 'bottom'
             ? scrollHeight() - viewportHeight - scrollTop()
             : scrollTop()
         this.stickGap = Math.max(0, stickGap)
