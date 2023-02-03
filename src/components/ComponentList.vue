@@ -480,6 +480,14 @@ export class DataSource {
     }
   }
 
+  updateItem(item) {
+    for (const key in item) {
+      const val = item[key]
+      delete item[key]
+      Vue.set(item, key, val)
+    }
+  }
+
   update (...args) {
     let i = 0
 
@@ -489,11 +497,7 @@ export class DataSource {
       Vue.set(this.list, position, _item)
     }
 
-    for (const key in _item) {
-      const val = _item[key]
-      delete _item[key]
-      Vue.set(_item, key, val)
-    }
+    this.updateItem(_item)
 
     return _item
   }
