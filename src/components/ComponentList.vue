@@ -501,6 +501,18 @@ export class DataSource {
 
     return _item
   }
+
+  cutUpdates (list) {
+    for (let i = 0; i < list.length;) {
+      const position = this.findPosition(list[i].id)
+      if (position > -1) {
+        this.update(position, list[i])
+        list.splice(i, 1)
+      } else {
+        i++
+      }
+    }
+  }
 }
 
 export const LOADING_ITEM = { type: 'loading' }
@@ -560,11 +572,13 @@ export class WaterfallSource extends DataSource {
         return
       }
 
-      if (_list?.length) {
+      const len = _list?.length
+      if (len) {
+        this.cutUpdates(_list)
         list.splice(list.length - 1, 0, ..._list)
       }
 
-      if (_list?.length < limit) {
+      if (len < limit) {
         if (this.loading) {
           this.loading = false
           this.list.splice(list.length - 1, 1)
@@ -650,14 +664,17 @@ export class HistorySource extends DataSource {
         list.splice(0, 1, historyItem)
       }
 
-      if (_list.length) {
+      const len = _list?.length
+      if (len) {
+        this.cutUpdates(_list)
+
         list.push(..._list)
 
         if (list.length > this.firstIndex && !this.historyRefresh.request) {
           this.cutHistory()
         }
 
-        if (_list.length >= limit) {
+        if (len >= limit) {
           if (this.autoNext) {
             this.refresh.query(true)
           }
@@ -702,11 +719,14 @@ export class HistorySource extends DataSource {
       }
 
       if (!this.cutHistory()) {
-        if (_list.length) {
+        const len = _list?.length
+        if (len) {
+          this.cutUpdates(_list)
+
           list.splice(this.firstIndex, 0, ..._list)
         }
 
-        if (_list.length < limit) {
+        if (len < limit) {
           this.firstIndex = 0
           list.splice(0, 1)
         }
