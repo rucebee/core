@@ -195,6 +195,11 @@ export default {
                 ? Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.stickGap)
                 : 0
 
+            console.log({
+              top,
+              stickGap: this.stickGap
+            })
+
             // console.log('bottom', scrollTop(), '->', top, {
             //   viewportHeight,
             //   offsetHeight: document.documentElement.offsetHeight
@@ -480,7 +485,7 @@ export class DataSource {
     }
   }
 
-  updateItem(item) {
+  updateItem (item) {
     for (const key in item) {
       const val = item[key]
       delete item[key]

@@ -33,6 +33,7 @@ function beforeCreate () {
 
   const onResize = (ev) => {
     placeholder.style.height = el.offsetHeight + 'px'
+    document.documentElement.style.setProperty('--fixed-' + (this.bottom ? 'bottom' : 'top'), el.offsetHeight + 'px')
 
     if (shortEl) {
       onScroll(ev)
@@ -81,6 +82,8 @@ function beforeCreate () {
       if (window.$fixedTop === fixedTop) {
         delete window.$fixedTop
       }
+
+      document.documentElement.style.setProperty('--fixed-' + (this.bottom ? 'bottom' : 'top'), '0px')
 
       placeholder.remove()
       dock.remove()
