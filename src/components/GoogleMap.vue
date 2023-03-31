@@ -15,7 +15,7 @@ export default {
       regionLang = `&region=${arr[1]}&language=${arr[0]}`
     }
 
-    loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' + this.gkey + regionLang, null, 'app-gmap').then(() => {
+    loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&callback=initGMap&key=' + this.gkey + regionLang, 'initGMap', 'app-gmap').then(() => {
       if (this._isDestroyed) return
 
       const { Map, Marker } = google.maps

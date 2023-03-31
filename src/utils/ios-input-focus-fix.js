@@ -35,8 +35,6 @@ function onFocus (ev) {
     dispatchEvent(new Event('resize'))
   }
 
-  console.log(ev.target)
-
   if (Math.abs(document.documentElement.offsetHeight - outerHeight) < 1) {
     inpStyle.top = `${(outerHeight - freeHeight) / 2}px`
     inpStyle.bottom = ''

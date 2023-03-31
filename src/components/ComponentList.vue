@@ -195,11 +195,6 @@ export default {
                 ? Math.max(0, document.documentElement.offsetHeight - visualViewport.height - this.stickGap)
                 : 0
 
-            console.log({
-              top,
-              stickGap: this.stickGap
-            })
-
             // console.log('bottom', scrollTop(), '->', top, {
             //   viewportHeight,
             //   offsetHeight: document.documentElement.offsetHeight

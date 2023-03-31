@@ -22,11 +22,11 @@ addEventListener('click', (ev) => {
     //const clickDist = distance(ev.clientX, ev.clientY, ev.target.getBoundingClientRect())
     const clickDist = distance(touchX, touchY, ev.target.getBoundingClientRect())
 
-    console.log('click-fix',
-      touchTarget, touchDist,
-      ev.target, clickDist,
-      touchDist >= 1 || clickDist <= -1
-    )
+    // console.log('click-fix',
+    //   touchTarget, touchDist,
+    //   ev.target, clickDist,
+    //   touchDist >= 1 || clickDist <= -1
+    // )
 
     if (touchDist >= 1 || clickDist <= -1) {
       ev.stopPropagation()

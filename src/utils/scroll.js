@@ -92,7 +92,9 @@ export function scrollComplete (delay = DELAY) {
 }
 
 export function scrollHeight () {
-  return wnd.scrollHeight
+  const offsetBottom = parseFloat(document.documentElement.style.getPropertyValue('--vp-offset-bottom')) || 0
+
+  return wnd.scrollHeight - offsetBottom
 }
 
 export function scrollTop () {

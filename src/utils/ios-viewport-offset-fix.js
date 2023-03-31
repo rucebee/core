@@ -13,12 +13,12 @@ if (visualViewport) {
     const offsetBottom = Math.max(0, outerHeight - visualViewport.height - offsetTop)
 
     if (vpOffsetTop !== offsetTop || vpOffsetBottom !== offsetBottom) {
-      console.log({
-        offsetTop,
-        offsetBottom,
-        vpOffsetTop,
-        vpOffsetBottom
-      })
+      // console.log({
+      //   offsetTop,
+      //   offsetBottom,
+      //   vpOffsetTop,
+      //   vpOffsetBottom
+      // })
 
       vpOffsetTop = offsetTop
       vpOffsetBottom = offsetBottom
