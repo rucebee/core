@@ -1,5 +1,5 @@
 <template>
-  <div class="google-map" />
+  <div class="google-map"/>
 </template>
 
 <script>
@@ -10,15 +10,20 @@ export default {
 
   mounted () {
     let regionLang = ''
-    if(this.locale) {
+    if (this.locale) {
       const arr = this.locale.split('-')
       regionLang = `&region=${arr[1]}&language=${arr[0]}`
     }
 
     loadJs('https://maps.googleapis.com/maps/api/js?libraries=geometry&callback=initGMap&key=' + this.gkey + regionLang, 'initGMap', 'app-gmap').then(() => {
-      if (this._isDestroyed) return
+      if (this._isDestroyed) {
+        return
+      }
 
-      const { Map, Marker } = google.maps
+      const {
+        Map,
+        Marker
+      } = google.maps
 
       const map = new Map(this.$el, Object.assign({
         center: this.center,
@@ -26,6 +31,10 @@ export default {
         scrollwheel: true,
         disableDefaultUI: true,
       }, this.options))
+
+      map.addListener('center_changed', () => {
+        this.$emit('centerChanged', map)
+      })
 
       // const styles = [{
       //   featureType: 'all',
