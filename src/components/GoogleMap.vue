@@ -36,6 +36,14 @@ export default {
         this.$emit('centerChanged', map)
       })
 
+      map.addListener('dragstart', () => {
+        this.$emit('dragstart', map)
+      })
+
+      map.addListener('dragend', () => {
+        this.$emit('dragend', map)
+      })
+
       // const styles = [{
       //   featureType: 'all',
       //   elementType: 'all',
