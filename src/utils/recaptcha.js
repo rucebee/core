@@ -28,6 +28,7 @@ function promiseReject (reason = { name: 'UserCancel' }) {
 }
 
 async function destroy () {
+  console.log('grecaptcha', 'destroy')
   promiseReject()
 
   try {
@@ -48,11 +49,10 @@ async function destroy () {
   if (scriptEl) scriptEl.remove()
 
   delete window.grecaptcha
-
-  console.log('recaptcha destroyed')
 }
 
 const onClick = (ev) => {
+  console.log('grecaptcha', 'onClick')
   promiseReject()
 }
 
@@ -73,12 +73,13 @@ export default async (key) => {
   try {
     await loadJsPromise
   } catch (err) {
-    console.log('recaptcha prev', err)
+    console.log('grecaptcha prev', err)
   }
 
   let el, promise
   try {
     if (typeof grecaptcha === 'undefined') {
+      console.log('grecaptcha', 'loadJs')
       loadJsPromise = loadJs(`https://www.google.com/recaptcha/api.js?onload=grecaptchaLoaded&render=explicit&hl=${process.env.LOCALE}`, 'grecaptchaLoaded', scriptId)
       await loadJsPromise
     }
@@ -86,20 +87,22 @@ export default async (key) => {
     promiseReject()
 
     el = document.getElementById(elId)
-    if (el)
+    if (el) {
+      console.log('grecaptcha', 'reset')
       grecaptcha.reset()
-    else {
+    } else {
       el = document.createElement('div')
       el.id = elId
       el.style.position = 'absolute'
 
       document.body.appendChild(el)
 
+      console.log('grecaptcha', 'render')
       grecaptcha.render(el, {
         sitekey: siteKey,
         size: 'invisible',
         callback: (token) => {
-          console.log('recaptcha', { token })
+          console.log('grecaptcha', { token })
 
           // while (recaptchaEl.lastChild)
           //   recaptchaEl.removeChild(recaptchaEl.lastChild)
@@ -107,7 +110,7 @@ export default async (key) => {
           promiseResolve(token)
         },
         'error-callback': () => {
-          console.error('recaptcha')
+          console.error('grecaptcha')
 
           // while (recaptchaEl.lastChild)
           //   recaptchaEl.removeChild(recaptchaEl.lastChild)
@@ -115,8 +118,6 @@ export default async (key) => {
           promiseResolve()
         },
       })
-
-      console.log('recaptcha rendered')
     }
 
     if (key) return
@@ -127,9 +128,13 @@ export default async (key) => {
         reject,
         timerId: setInterval(() => {
           let frEl = document.querySelector('iframe[src^="https://www.google.com/recaptcha/api2/bframe"]')
-          if (!frEl) promiseResolve()
+          if (!frEl) {
+            console.log('grecaptcha', 'no frame')
+            promiseResolve()
+          }
           else while (frEl !== document.body) {
             if (frEl.style.visibility === 'hidden' || frEl.style.display === 'none') {
+              console.log('grecaptcha', 'frame hidden')
               promiseResolve()
               break
             }
@@ -142,9 +147,10 @@ export default async (key) => {
 
     addEventListener('click', onClick, true)
 
+    console.log('grecaptcha', 'execute')
     await grecaptcha.execute()
   } catch (err) {
-    console.error('recaptcha', err)
+    console.error('grecaptcha', err)
 
     if (promised) promiseRelease()
     if (el) document.body.removeChild(el)
