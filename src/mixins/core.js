@@ -1,11 +1,12 @@
 import noop from 'lodash/noop'
 import isString from 'lodash/isString'
 
+let loadingCount = 0
+
 export default {
   data () {
     return {
       loading: false,
-      loadingCount: 0,
     }
   },
 
@@ -45,21 +46,21 @@ export default {
 
     setLoading (loading) {
       if (loading) {
-        this.loadingCount++
+        loadingCount++
       } else if (loading !== false)
-        this.loadingCount = 0
-      else if (this.loadingCount > 0) {
-        this.loadingCount--
+        loadingCount = 0
+      else if (loadingCount > 0) {
+        loadingCount--
       }
 
       if (this.$nuxt.$loading.start)
-        if (this.loadingCount) {
+        if (loadingCount) {
           if (!this.loading)
             this.$nuxt.$loading.start()
         } else if (this.loading)
           this.$nuxt.$loading.finish()
 
-      this.loading = !!this.loadingCount
+      this.loading = !!loadingCount
     },
 
     back (home) {
