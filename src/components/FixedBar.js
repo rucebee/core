@@ -78,15 +78,17 @@ function beforeCreate () {
       onResize()
     },
 
-    beforeDestroy () {
+    destroyed () {
       if (window.$fixedTop === fixedTop) {
         delete window.$fixedTop
       }
 
       document.documentElement.style.setProperty('--fixed-' + (this.bottom ? 'bottom' : 'top'), '0px')
 
-      placeholder.remove()
-      dock.remove()
+      setTimeout(() => {
+        placeholder.remove()
+        dock.remove()
+      }, 100)
 
       removeEventListener('viewport', onResize)
       removeEventListener('resize', onResize)

@@ -200,9 +200,11 @@ export default {
             //   offsetHeight: document.documentElement.offsetHeight
             // })
 
-            scrollTo({ top }, true)
+            setTimeout(() => {
+              scrollTo({ top }, true)
 
-            this.layoutLater()
+              this.layoutLater()
+            })
 
             return
           } else if (this.key) {
