@@ -85,10 +85,12 @@ function beforeCreate () {
 
       document.documentElement.style.setProperty('--fixed-' + (this.bottom ? 'bottom' : 'top'), '0px')
 
-      setTimeout(() => {
+      const removeEl = () => {
         placeholder.remove()
         dock.remove()
-      }, 100)
+      }
+
+      isIOS ? setTimeout(removeEl, 100) : removeEl()
 
       removeEventListener('viewport', onResize)
       removeEventListener('resize', onResize)
