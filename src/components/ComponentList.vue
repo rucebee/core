@@ -628,6 +628,7 @@ export class HistorySource extends DataSource {
   historyItem
   autoNext
   autoHistory
+  initializing = true
 
   constructor (queryNext, queryHistory, limit, period = 0, {
     loadingItem,
@@ -652,7 +653,6 @@ export class HistorySource extends DataSource {
     this.autoNext = autoNext
     this.autoHistory = autoHistory
 
-    let initializing = true
     list.push(loadingItem)
 
     this.refresh = new PeriodicRefresh(async () => {
@@ -662,7 +662,7 @@ export class HistorySource extends DataSource {
 
       // console.log('refresh', {list, _list})
 
-      if (initializing) {
+      if (this.initializing) {
         list.splice(0, 1, historyItem)
       }
 
@@ -699,8 +699,8 @@ export class HistorySource extends DataSource {
         this.cutHistory()
       }
 
-      this.vm?.$emit('itemsChange', this, initializing)
-      initializing = false
+      this.vm?.$emit('itemsChange', this, this.initializing)
+      this.initializing = false
     }, this.autoNext ? period : 0)
 
     this.historyRefresh = new PeriodicRefresh(async () => {
@@ -779,6 +779,14 @@ export class HistorySource extends DataSource {
         this.refresh.query()
       }
     }
+  }
+
+  reset () {
+    this.initializing = true
+    this.firstIndex = 1
+    this.list.splice(0, this.list.length, this.loadingItem)
+    this.refresh.query(true)
+    this.historyRefresh.query(true)
   }
 }
 
