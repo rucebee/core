@@ -26,7 +26,7 @@ export default function scrollInit (selector) {
   if (wnd !== _wnd) {
     if (wnd) {
       if (wnd !== document.documentElement) {
-        wnd.removeEventListener('scroll', updateScrollTime)
+        window.removeEventListener('scroll', updateScrollTime)
 
         document.body.style.overflow = ''
 
@@ -38,7 +38,7 @@ export default function scrollInit (selector) {
           overflow: '',
         })
       } else {
-        wnd.removeEventListener('scroll', updateDocumentScrollTime)
+        window.removeEventListener('scroll', updateDocumentScrollTime)
       }
     }
 
@@ -46,7 +46,7 @@ export default function scrollInit (selector) {
 
     if (wnd) {
       if (wnd !== document.documentElement) {
-        wnd.addEventListener('scroll', updateScrollTime)
+        window.addEventListener('scroll', updateScrollTime)
 
         document.body.style.overflow = 'hidden'
 
@@ -60,7 +60,7 @@ export default function scrollInit (selector) {
           overflow: 'auto',
         })
       } else {
-        wnd.addEventListener('scroll', updateDocumentScrollTime)
+        window.addEventListener('scroll', updateDocumentScrollTime)
       }
     }
   }

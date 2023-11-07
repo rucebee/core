@@ -86,6 +86,7 @@ export default {
 
         //this.onLayout()
         this.$nextTick(this.onLayout)
+        //setTimeout(this.onLayout)
       },
       deep: true,
     },
@@ -200,11 +201,13 @@ export default {
             //   offsetHeight: document.documentElement.offsetHeight
             // })
 
-            setTimeout(() => {
-              scrollTo({ top }, true)
+            scrollTo({ top }, true)
+            this.layoutLater()
 
-              this.layoutLater()
-            })
+            // setTimeout(() => {
+            //   scrollTo({ top }, true)
+            //   this.layoutLater()
+            // })
 
             return
           } else if (this.key) {
@@ -216,6 +219,7 @@ export default {
                   // console.log('restore', scrollTop(), '->', scrollTop() - this.offset + top, {
                   //   text: child.__vue__.item?.text?.substr(0, 6),
                   //   offset: top - this.offset,
+                  //   indexOf: this.list.indexOf(child.__vue__.item)
                   // })
 
                   scrollTo({ top: scrollTop() - this.offset + top }, true)
@@ -284,9 +288,10 @@ export default {
           //   text: child.__vue__.item?.text?.substr(0, 6),
           //   offset: this.offset,
           //   type: ev?.type,
-          //   stickGap,
+          //   stickGap:this.stickGap,
           //   position,
           //   count,
+          //   indexOf: this.list.indexOf(child.__vue__.item)
           // })
 
           break
