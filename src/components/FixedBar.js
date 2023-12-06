@@ -1,11 +1,10 @@
 import mergeWith from 'lodash/mergeWith'
 import defaults from 'lodash/defaults'
+import platform from 'platform'
 
 import './fixed-bar.scss'
 
-import isIOS from '../utils/isIOS'
-
-if (isIOS) {
+if (platform.os.family === 'iOS') {
   require('../utils/ios-viewport-offset-fix')
 }
 
@@ -90,7 +89,7 @@ function beforeCreate () {
         dock.remove()
       }
 
-      isIOS ? setTimeout(removeEl, 100) : removeEl()
+      platform.os.family === 'iOS' ? setTimeout(removeEl, 100) : removeEl()
 
       removeEventListener('viewport', onResize)
       removeEventListener('resize', onResize)
