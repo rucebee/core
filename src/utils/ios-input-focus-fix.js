@@ -121,7 +121,7 @@ addEventListener('focus', (ev) => {
   if (p) {
     onFocus(ev)
   } else {
-    if ((ev.target.tagName !== 'INPUT' || inputTypes.indexOf(ev.type) < 0) && ev.target.tagName !== 'TEXTAREA') {
+    if ((ev.target.tagName !== 'INPUT' || inputTypes.indexOf(ev.target.type) < 0) && ev.target.tagName !== 'TEXTAREA') {
       return
     }
     document.documentElement.classList.add('inp-focus')
